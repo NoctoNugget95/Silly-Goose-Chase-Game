@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Silly Goose Chase</title>
+    
+    <!-- Google Fonts: Barriecito -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
+
     <style>
         body {
             margin: 0;
@@ -35,6 +41,22 @@
             align-items: center;
             perspective: 1000px;
         }
+        
+        /* Main Title Styling */
+        #main-title {
+            position: absolute;
+            top: 5%;
+            width: 100%;
+            text-align: center;
+            font-family: 'Barriecito', cursive;
+            font-size: 4rem; 
+            color: #d32f2f;
+            text-shadow: 3px 3px 0px #000;
+            margin: 0;
+            z-index: 30;
+            pointer-events: none;
+        }
+
         .message-box {
             background: rgba(255, 255, 255, 0.95);
             border: 4px solid #333;
@@ -45,8 +67,44 @@
             box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
             display: none;
             max-width: 90%;
+            z-index: 20;
+            position: absolute; 
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); 
         }
         
+        /* Start Screen specific layout */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 280px; 
+        }
+
+        /* The Rev Image (Right) */
+        #start-rev-img {
+            position: absolute;
+            right: 5%;
+            bottom: 0;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 10; 
+            display: none; 
+        }
+
+        /* The Goose Image (Left) */
+        #start-goose-img {
+            position: absolute;
+            left: 5%;
+            bottom: 0;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 10;
+            display: none; 
+        }
+
         .spin-in {
             display: block !important;
             animation: spinIn 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -85,35 +143,6 @@
             transform: scale(0.95);
         }
         
-        .file-upload-container {
-            margin: 15px 0;
-            padding: 10px;
-            border: 2px dashed #888;
-            border-radius: 8px;
-            background: #fafafa;
-        }
-        input[type="file"] { display: none; }
-        .custom-file-upload {
-            display: inline-block;
-            padding: 8px 16px;
-            cursor: pointer;
-            background: #e0e0e0;
-            border: 2px solid #555;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-        .custom-file-upload:hover { background: #d0d0d0; }
-        #preview-thumb {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-            border: 2px solid #333;
-            margin-right: 10px;
-            vertical-align: middle;
-            background: #fff;
-            display: inline-block;
-        }
         #score-display {
             position: absolute;
             top: 20px;
@@ -152,7 +181,7 @@
             text-shadow: 0 0 10px #4fc3f7;
         }
         
-        /* New Audio Control Container */
+        /* Audio Controls */
         #audio-controls {
             position: absolute;
             top: 20px;
@@ -193,7 +222,7 @@
             cursor: pointer;
             opacity: 0;
             transition: opacity 0.2s ease;
-            pointer-events: none; /* Disable interaction when hidden */
+            pointer-events: none;
         }
 
         #audio-controls:hover #volume-slider {
@@ -233,31 +262,23 @@
 
 <div id="score-display">Score: 0</div>
 
-<!-- New Audio Controls -->
 <div id="audio-controls">
     <div id="mute-btn">🔊</div>
     <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5">
 </div>
 
 <div id="ui-layer">
-    <div id="start-screen" class="message-box" style="display: block;">
-        <h1>Silly Goose Chase</h1>
-        <p id="instruction-text">Tap repeatedly to fly!</p>
-        
-        <div class="file-upload-container" id="upload-ui">
-            <p style="margin:0; font-size:0.9rem; color:#666;">Current Character:</p>
-            <div style="margin-top:10px;">
-                <img id="preview-thumb" src="" alt="?">
-                <label for="sprite-upload" class="custom-file-upload">
-                    Test Sprite
-                </label>
-            </div>
-            <input type="file" id="sprite-upload" accept="image/*,.svg">
-            <span class="reset-link" id="reset-sprite">Reset to Default</span>
-        </div>
+    <!-- Main Title -->
+    <h1 id="main-title">Silly Goose Chase</h1>
 
-        <button id="start-btn">Start Running</button>
+    <div id="start-screen" class="message-box" style="display: flex;">
+        <p id="instruction-text">Tap repeatedly to fly!</p>
+        <button id="start-btn">Start Flying</button>
     </div>
+    
+    <!-- START SCREEN IMAGES -->
+    <img id="start-rev-img" src="" alt="Rev">
+    <img id="start-goose-img" src="" alt="Goose">
     
     <div id="game-over-screen" class="message-box">
         <h1>Silly Goose!</h1>
@@ -266,63 +287,358 @@
     </div>
 </div>
 
-<div id="loading">Initializing...</div>
+<div id="loading">Loading...</div>
 
-<!-- CRASH REPORTER: Catches syntax errors from bad pasting -->
+<!-- FAILSAFE SCRIPT -->
 <script>
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-        var loader = document.getElementById('loading');
-        loader.className = 'error';
-        loader.innerHTML = "<strong>⚠️ Game Crashed!</strong><br><br>" + msg + "<br><br>Check Line: " + lineNo;
-        loader.style.display = 'flex';
-        return false;
-    };
-    
-    // Failsafe: Hide loading after 3s if no error
     window.addEventListener('load', function() {
         setTimeout(function() {
             var loader = document.getElementById('loading');
-            if (loader && !loader.classList.contains('error')) loader.style.display = 'none';
-        }, 1500);
+            if (loader) loader.style.display = 'none';
+        }, 500);
     });
+    
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+        var loader = document.getElementById('loading');
+        if(loader) {
+            loader.className = 'error';
+            loader.innerHTML = "<strong>⚠️ Game Crashed!</strong><br><br>" + msg + "<br><br>Check Line: " + lineNo;
+            loader.style.display = 'flex';
+        }
+        return false;
+    };
 </script>
 
 <script>
     // =========================================================================
-    //  --- ASSET PASTE ZONE ---
-    //  Paste your code between the backticks (` `).
-    //  Do not delete the backticks!
+    //  --- CONFIGURATION & ASSETS ---
+    //  Enter your file paths (e.g., 'assets/player.png') or Base64 strings.
     // =========================================================================
     
-    // 1. CHARACTER SVG CODE
-    const DATA_PLAYER_SVG = ``; 
+    // 1. IN-GAME CHARACTER (SVG Code or Image Path)
+    // If using an image file, enter the path like: "images/rev.png"
+    const PERMANENT_PLAYER_SVG = ``; 
 
-    // 2. AUDIO BASE64 STRINGS (e.g. "data:audio/mp3;base64,....")
-    const DATA_AUDIO_JUMP = ``;
-    const DATA_AUDIO_COIN1 = ``;
-    const DATA_AUDIO_COIN2 = ``;
-    const DATA_AUDIO_POWERUP = ``;
-    const DATA_AUDIO_MUSIC_MAIN = ``;
-    const DATA_AUDIO_MUSIC_CLASH = ``;
-    
-    // =========================================================================
-    //  END OF PASTE ZONE
-    // =========================================================================
-
-    // Gather custom audio map for loader
-    const CUSTOM_AUDIO = {
-        jump: DATA_AUDIO_JUMP,
-        coin1: DATA_AUDIO_COIN1,
-        coin2: DATA_AUDIO_COIN2,
-        powerup: DATA_AUDIO_POWERUP,
-        music_main: DATA_AUDIO_MUSIC_MAIN,
-        music_clash: DATA_AUDIO_MUSIC_CLASH
+    // 2. START SCREEN CONFIGURATION
+    const START_SCREEN_REV_DATA = ``; // Path to Rev image
+    const START_SCREEN_REV_LAYOUT = {
+        right: '5%', bottom: '0px', height: '45vh', width: 'auto', rotate: '0deg', scaleX: '-1' 
     };
+
+    const START_SCREEN_GOOSE_DATA = ``; // Path to Goose image
+    const START_SCREEN_GOOSE_LAYOUT = {
+        left: '5%', bottom: '0px', height: '40vh', width: 'auto', rotate: '0deg', scaleX: '1' 
+    };
+
+    // 3. AUDIO FILES (Path to mp3/wav or Base64)
+    // Leave blank to use the built-in synthesizer fallback.
+    const CUSTOM_AUDIO = {
+        jump: "",        // e.g., "audio/jump.mp3"
+        coin1: "",       // e.g., "audio/coin1.wav"
+        coin2: "",
+        powerup: "",
+        music_main: "",  // e.g., "audio/chase_theme.mp3"
+        music_clash: ""
+    };
+    // =========================================================================
+
+    // --- APPLY START SCREEN SETTINGS ---
+    const startRevImg = document.getElementById('start-rev-img');
+    if (startRevImg && START_SCREEN_REV_DATA) {
+        startRevImg.src = START_SCREEN_REV_DATA;
+        startRevImg.style.right = START_SCREEN_REV_LAYOUT.right;
+        startRevImg.style.bottom = START_SCREEN_REV_LAYOUT.bottom;
+        startRevImg.style.height = START_SCREEN_REV_LAYOUT.height;
+        startRevImg.style.width = START_SCREEN_REV_LAYOUT.width;
+        startRevImg.style.transform = `rotate(${START_SCREEN_REV_LAYOUT.rotate}) scaleX(${START_SCREEN_REV_LAYOUT.scaleX})`;
+        startRevImg.style.display = 'block';
+    }
+
+    const startGooseImg = document.getElementById('start-goose-img');
+    if (startGooseImg && START_SCREEN_GOOSE_DATA) {
+        startGooseImg.src = START_SCREEN_GOOSE_DATA;
+        startGooseImg.style.left = START_SCREEN_GOOSE_LAYOUT.left;
+        startGooseImg.style.bottom = START_SCREEN_GOOSE_LAYOUT.bottom;
+        startGooseImg.style.height = START_SCREEN_GOOSE_LAYOUT.height;
+        startGooseImg.style.width = START_SCREEN_GOOSE_LAYOUT.width;
+        startGooseImg.style.transform = `rotate(${START_SCREEN_GOOSE_LAYOUT.rotate}) scaleX(${START_SCREEN_GOOSE_LAYOUT.scaleX})`;
+        startGooseImg.style.display = 'block';
+    }
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const instructP = document.getElementById('instruction-text');
     if (instructP) {
         instructP.innerText = isTouchDevice ? "Tap repeatedly to fly!" : "Press Space or Click to fly!";
+    }
+
+    // --- ASSETS LOGIC ---
+    const playerImg = new Image();
+    // Use Base64 Fallback directly as default to prevent 404s
+    const FALLBACK_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PHRleHQgeT0iNTA1IiB5PSI1MCUiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIyNCI+PzwvdGV4dD48L3N2Zz4=";
+    
+    // Set default first
+    playerImg.src = FALLBACK_SVG;
+
+    playerImg.onload = () => {
+        const loader = document.getElementById('loading');
+        if (loader) loader.style.display = 'none';
+    };
+    
+    playerImg.onerror = () => {
+        console.warn("Image load error. Reverting to fallback.");
+        const loader = document.getElementById('loading');
+        if (loader) loader.style.display = 'none';
+        if (playerImg.src !== FALLBACK_SVG) playerImg.src = FALLBACK_SVG;
+    };
+
+    // Load custom player sprite if provided
+    try {
+        if (PERMANENT_PLAYER_SVG && PERMANENT_PLAYER_SVG.trim().length > 1) {
+            if (PERMANENT_PLAYER_SVG.trim().startsWith('<')) {
+                // Raw SVG Code
+                const svgBlob = new Blob([PERMANENT_PLAYER_SVG], {type: 'image/svg+xml'});
+                playerImg.src = URL.createObjectURL(svgBlob);
+            } else {
+                // Path or Data URI
+                playerImg.src = PERMANENT_PLAYER_SVG;
+            }
+        }
+    } catch (e) {
+        console.error("Error setting player image:", e);
+    }
+
+    // --- DRAWING HELPERS ---
+    let doodleTime = 0;
+    
+    function drawWobblyLine(x1, y1, x2, y2, color, thickness) {
+        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = thickness; ctx.lineCap = 'round';
+        const segments = 10; const dx = (x2 - x1) / segments; const dy = (y2 - y1) / segments;
+        ctx.moveTo(x1, y1);
+        for (let i = 1; i <= segments; i++) {
+            const offsetX = Math.sin(doodleTime + i) * 2; const offsetY = Math.cos(doodleTime + i * 2) * 2;
+            ctx.lineTo(x1 + dx * i + offsetX, y1 + dy * i + offsetY);
+        }
+        ctx.stroke();
+    }
+
+    function drawDoodleRect(x, y, w, h, fillColor, strokeColor) {
+        ctx.fillStyle = fillColor;
+        ctx.beginPath(); ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + w - 2, y + 5);
+        ctx.lineTo(x + w - 5, y + h - 2); ctx.lineTo(x + 3, y + h - 5); ctx.closePath(); ctx.fill();
+        drawWobblyLine(x, y, x + w, y, strokeColor, 3); drawWobblyLine(x + w, y, x + w, y + h, strokeColor, 3);
+        drawWobblyLine(x + w, y + h, x, y + h, strokeColor, 3); drawWobblyLine(x, y + h, x, y, strokeColor, 3);
+        ctx.beginPath(); ctx.strokeStyle = "rgba(0,0,0,0.1)"; ctx.lineWidth = 2;
+        for(let i=10; i<w; i+=15) { ctx.moveTo(x + i, y + 5); ctx.lineTo(x + i - 5, y + h - 5); } ctx.stroke();
+    }
+
+    function drawClouds(frames, isBlueprint) {
+        ctx.fillStyle = isBlueprint ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.5)"; 
+        ctx.beginPath();
+        const t = frames * 0.002;
+        for(let i = 0; i < 5; i++) {
+             let cx = ((i * 300) + t * 100) % (canvas.width + 200) - 100;
+             let cy = 50 + Math.sin(i + t) * 30;
+             ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+             ctx.arc(cx + 30, cy - 10, 50, 0, Math.PI * 2);
+             ctx.arc(cx + 60, cy, 40, 0, Math.PI * 2);
+        }
+        ctx.fill();
+    }
+
+    function drawPaperBackground() {
+        ctx.beginPath(); ctx.strokeStyle = "rgba(173, 216, 230, 0.5)"; ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < canvas.width; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+        for (let y = 0; y < canvas.height; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+        ctx.stroke();
+        ctx.beginPath(); ctx.strokeStyle = "rgba(255, 182, 193, 0.8)"; ctx.lineWidth = 2;
+        ctx.moveTo(60, 0); ctx.lineTo(60, canvas.height); ctx.stroke();
+    }
+    
+    function drawBlueprintBackground() {
+        ctx.beginPath(); 
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; 
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = -canvas.height; x < canvas.width; x += gridSize) { 
+            ctx.moveTo(x, 0); 
+            ctx.lineTo(x + canvas.height, canvas.height); 
+        }
+        ctx.stroke();
+    }
+
+    function drawBattery(x, y, frames) {
+        drawDoodleRect(x, y, 30, 50, "#00e676", "#000"); 
+        ctx.fillStyle = "#888";
+        ctx.fillRect(x + 7, y - 6, 16, 6);
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.strokeRect(x + 7, y - 6, 16, 6);
+        if (frames % 20 < 10) {
+            ctx.fillStyle = "yellow";
+            ctx.beginPath(); ctx.arc(x - 5, y - 5, 5, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    function drawSpaceDoodle(el) {
+        ctx.save();
+        ctx.translate(el.x, el.y);
+        ctx.rotate(el.rotation);
+        ctx.strokeStyle = el.color;
+        ctx.fillStyle = el.color.replace('0.2)', '0.05)'); 
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        
+        if (el.type === 'sun') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            const rays = 10;
+            for(let i=0; i<rays; i++) {
+                const angle = (i / rays) * Math.PI * 2;
+                const rStart = el.size/2 + 5;
+                const rEnd = el.size/2 + 25;
+                ctx.moveTo(Math.cos(angle)*rStart, Math.sin(angle)*rStart);
+                ctx.lineTo(Math.cos(angle)*rEnd, Math.sin(angle)*rEnd);
+            }
+            ctx.stroke();
+        } 
+        else if (el.type === 'moon') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(-el.size/6, -el.size/6, el.size/6, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(el.size/4, el.size/4, el.size/8, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(-el.size/3, el.size/3, el.size/10, 0, Math.PI*2); ctx.stroke();
+        }
+        else if (el.type === 'earth') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-el.size/3, -el.size/4);
+            ctx.quadraticCurveTo(0, -el.size/2, el.size/3, -el.size/4);
+            ctx.quadraticCurveTo(el.size/4, 0, -el.size/4, 0); ctx.closePath(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-el.size/4, el.size/4);
+            ctx.quadraticCurveTo(0, el.size/2, el.size/4, el.size/3);
+            ctx.quadraticCurveTo(0, 0, -el.size/4, el.size/4); ctx.stroke();
+        }
+        else if (el.type === 'comet') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/3, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.5, -el.size/3);
+            ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.8, 0);
+            ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.5, el.size/3); ctx.stroke();
+        }
+        else if (el.type === 'asteroid') {
+            ctx.beginPath();
+            const points = 8;
+            for(let i=0; i<=points; i++) {
+                const angle = (i / points) * Math.PI * 2;
+                const r = el.size/2 + (Math.sin(i * 345) * 5); 
+                const px = Math.cos(angle) * r; const py = Math.sin(angle) * r;
+                if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        }
+        else if (el.type === 'planet') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(0, 0, el.size/1.2, el.size/4, Math.PI/-6, 0, Math.PI*2); ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    function drawCoin(c, frames) {
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        const scale = 1 + Math.sin(frames * 0.1 + c.wobbleOffset) * 0.1;
+        ctx.scale(scale, scale);
+        
+        ctx.fillStyle = c.color;
+        ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.fill();
+        
+        drawWobblyLine(-c.radius, -c.radius*0.8, c.radius, -c.radius*0.8, "#000", 2); 
+        
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, c.radius * 0.7, 0, Math.PI*2); ctx.stroke();
+        
+        ctx.fillStyle = "#fff"; ctx.font = `bold ${c.radius}px 'Comic Sans MS'`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(c.value, 0, 2);
+        ctx.restore();
+    }
+
+    function drawFloater(f) {
+        ctx.save();
+        ctx.globalAlpha = f.life / 60;
+        ctx.fillStyle = f.color;
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 1;
+        ctx.font = "bold 24px 'Comic Sans MS'";
+        ctx.textAlign = "center";
+        ctx.fillText(f.text, f.x, f.y);
+        ctx.strokeText(f.text, f.x, f.y);
+        ctx.restore();
+    }
+
+    function drawClashClouds(layer, clashCloudParticles) {
+        clashCloudParticles.forEach(p => {
+            if (p.layer !== layer) return;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = (layer === 1) ? p.alpha * 0.6 : p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#888";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        });
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawLightning(centerX, centerY) {
+        ctx.beginPath();
+        ctx.strokeStyle = Math.random() > 0.5 ? "#00ffff" : "#ffffff";
+        ctx.lineWidth = 3 + Math.random() * 3;
+        let lx = centerX - 20 + (Math.random() - 0.5) * 60;
+        let ly = centerY - 200; 
+        ctx.moveTo(lx, ly);
+        for(let i=0; i<12; i++) {
+            lx += (Math.random() - 0.5) * 60;
+            ly += Math.random() * 60;
+            ctx.lineTo(lx, ly);
+        }
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#00ffff";
+        ctx.stroke();
+        ctx.shadowBlur = 0; 
+    }
+
+    function drawGoose(x, y, rotation, frames, isClashing, secretModeActive) {
+        const wiggle = Math.sin(frames * 0.2) * 5;
+        ctx.save(); 
+        ctx.translate(x, y);
+        if (rotation) ctx.rotate(rotation); 
+        
+        ctx.fillStyle = "white"; ctx.strokeStyle = "black"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(20, -5); ctx.quadraticCurveTo(40, -15, 45 + wiggle/2, -30); ctx.stroke();
+        ctx.beginPath(); ctx.arc(45 + wiggle/2, -30, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "orange"; ctx.beginPath(); ctx.moveTo(53 + wiggle/2, -33); ctx.lineTo(65 + wiggle/2, -28); ctx.lineTo(53 + wiggle/2, -25); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "black"; ctx.beginPath(); ctx.arc(48 + wiggle/2, -32, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(45 + wiggle/2, -36); ctx.lineTo(52 + wiggle/2, -34); ctx.stroke();
+        ctx.fillStyle = "white"; const wingY = Math.sin(frames * 0.5) * 15;
+        ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(10, -25 + wingY, -10, -10 + wingY); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = "orange"; ctx.beginPath(); ctx.moveTo(-5, 15); ctx.lineTo(-10 + wiggle, 25);
+        ctx.moveTo(5, 15); ctx.lineTo(10 + wiggle, 28); ctx.stroke();
+        
+        if (!isClashing) {
+            if (!secretModeActive && frames % 100 < 40 && !rotation) {
+                ctx.font = "bold 20px 'Comic Sans MS'"; ctx.fillStyle = "red"; ctx.fillText("HONK!", 50, -50);
+            }
+            else if (secretModeActive) {
+                if (frames % 10 < 7) { 
+                    ctx.save();
+                    ctx.translate((Math.random()-0.5)*8, (Math.random()-0.5)*8);
+                    const size = 20 + Math.random() * 10;
+                    ctx.font = `bold ${size}px 'Comic Sans MS'`; 
+                    ctx.fillStyle = Math.random() > 0.5 ? "red" : "#ff3333"; 
+                    ctx.fillText("HONK!!", 50, -60);
+                    ctx.restore();
+                }
+            }
+        }
+        ctx.restore();
     }
 
     // --- AUDIO SYSTEM ---
@@ -373,6 +689,21 @@
         loadCustomSounds: function() {
             const loadBuffer = (key, rawData) => {
                 if (!rawData || rawData.length < 50) return;
+                
+                // If it looks like a path (no "data:" prefix), fetch it
+                if (!rawData.startsWith('data:')) {
+                    fetch(rawData)
+                        .then(response => response.arrayBuffer())
+                        .then(buffer => this.ctx.decodeAudioData(buffer))
+                        .then(decoded => {
+                             this.customBuffers[key] = decoded;
+                             console.log("Loaded audio from file:", key);
+                        })
+                        .catch(e => console.warn("Failed to load audio file:", key, e));
+                    return;
+                }
+
+                // Existing Base64 logic
                 let cleanData = rawData.replace(/\s/g, '');
                 if (cleanData.includes(',')) cleanData = cleanData.split(',')[1];
                 try {
@@ -407,10 +738,8 @@
         setVolume: function(val) {
             this.masterVolume = parseFloat(val);
             if (this.masterVolume > 0 && this.isMuted) {
-                // Auto unmute if dragging slider
                 this.toggleMute();
             }
-            // Update active music volume if playing
             if (this.bgMusicGainNode) {
                 this.bgMusicGainNode.gain.setValueAtTime(0.4 * this.masterVolume, this.ctx.currentTime);
             }
@@ -449,7 +778,6 @@
             this.noteIndex = 0;
             this.isPlaying = true;
             
-            // Check for Custom Music Buffer
             if ((trackName === 'main' && this.customBuffers['main']) || (trackName === 'clash' && this.customBuffers['clash'])) {
                 const buffer = this.customBuffers[trackName === 'clash' ? 'clash' : 'main'];
                 if (this.isMuted || !this.ctx) return;
@@ -467,7 +795,6 @@
                 this.activeSource = source;
                 this.bgMusicGainNode = gain;
             } else {
-                // Synth fallback
                 if (this.ctx) this.nextNoteTime = this.ctx.currentTime;
             }
         },
@@ -482,7 +809,6 @@
         },
 
         scheduleNote: function() {
-            // If playing custom track, do nothing
             if (this.isMuted || !this.ctx || !this.isPlaying || this.activeSource) return;
             
             const track = this.tracks[this.currentTrack];
@@ -526,9 +852,7 @@
         playSound: function(name) {
             if (this.isMuted || !this.ctx) return;
             
-            // Check for Custom SFX Buffer
             let buffer = this.customBuffers[name];
-            // Random Coin logic
             if (name === 'coin') {
                 if (this.customBuffers['coin1'] && this.customBuffers['coin2']) {
                      buffer = Math.random() > 0.5 ? this.customBuffers['coin1'] : this.customBuffers['coin2'];
@@ -546,7 +870,7 @@
                 return;
             }
 
-            // Fallbacks (Synth)
+            // Fallback Synth
             if (name === 'jump') {
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
@@ -572,7 +896,7 @@
     document.getElementById('mute-btn').addEventListener('click', () => AudioSys.toggleMute());
     document.getElementById('volume-slider').addEventListener('input', (e) => AudioSys.setVolume(e.target.value));
 
-    // --- Configuration ---
+    // --- CONFIG & ASSETS ---
     const CONFIG = {
         gravity: 0.2, 
         jumpStrength: -6.5,
@@ -586,82 +910,7 @@
         coinChancePerGap: 0.3
     };
 
-    // --- Assets & Persistence Logic ---
-    const STORAGE_KEY = 'sillyGooseSprite_v2';
-    const playerImg = new Image();
-    
-    // SAFETY: Use Base64 Fallback directly as default to prevent 404s
-    const FALLBACK_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PHRleHQgeT0iNTA1IiB5PSI1MCUiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIyNCI+PzwvdGV4dD48L3N2Zz4=";
-    const DEFAULT_SRC = FALLBACK_SVG; 
-
-    playerImg.onload = () => {
-        const loader = document.getElementById('loading');
-        if (loader) loader.style.display = 'none';
-        document.getElementById('preview-thumb').src = playerImg.src;
-    };
-    
-    playerImg.onerror = () => {
-        console.warn("Image load error. Reverting to fallback.");
-        const loader = document.getElementById('loading');
-        if (loader) loader.style.display = 'none';
-        playerImg.src = FALLBACK_SVG;
-    };
-
-    // --- PRIORITY LOADING LOGIC ---
-    try {
-        if (DATA_PLAYER_SVG && DATA_PLAYER_SVG.trim().length > 20) {
-            console.log("Using Manual SVG Slot or Baked Image");
-            // DETECT IF IT IS SVG CODE OR DATA URI
-            if (DATA_PLAYER_SVG.trim().startsWith('<')) {
-                // It's raw SVG code
-                const svgBlob = new Blob([DATA_PLAYER_SVG], {type: 'image/svg+xml'});
-                playerImg.src = URL.createObjectURL(svgBlob);
-            } else {
-                // It's likely a Data URI (Baked Image)
-                playerImg.src = DATA_PLAYER_SVG;
-            }
-            
-            if(document.getElementById('upload-ui')) {
-                document.getElementById('upload-ui').style.display = 'none';
-            }
-        } else {
-            const savedSprite = localStorage.getItem(STORAGE_KEY);
-            if (savedSprite) {
-                playerImg.src = savedSprite;
-            } else {
-                playerImg.src = DEFAULT_SRC;
-            }
-        }
-    } catch (e) {
-        console.error("Error in SVG loading logic:", e);
-        playerImg.src = DEFAULT_SRC; 
-    }
-
-    document.getElementById('sprite-upload').addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const result = event.target.result;
-                playerImg.src = result;
-                document.getElementById('preview-thumb').src = result;
-                try {
-                    localStorage.setItem(STORAGE_KEY, result);
-                } catch (err) {
-                    console.error("Storage full/error", err);
-                }
-            }
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    });
-
-    document.getElementById('reset-sprite').addEventListener('click', () => {
-        localStorage.removeItem(STORAGE_KEY);
-        playerImg.src = DEFAULT_SRC;
-        alert("Reset to default.");
-    });
-
-
-    // --- Game Loop & Logic ---
+    // --- GAME LOOP VARIABLES ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
@@ -671,16 +920,13 @@
     let isPlaying = false;
     let isClashing = false;
     let clashTimer = 0;
-    let doodleTime = 0;
 
-    // Secret Level State
     const secretMode = {
         active: false,
         timer: 0,
-        maxDuration: 300 // 5s
+        maxDuration: 300 
     };
 
-    // Battery Entity
     const battery = {
         active: false, x: 0, y: 0, width: 30, height: 50, wobble: 0
     };
@@ -694,6 +940,8 @@
     let bgElements = [];
     let coins = [];
     let scoreFloater = [];
+
+    // --- GAME FUNCTIONS ---
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -712,8 +960,7 @@
         player.velocity = CONFIG.jumpStrength;
         createParticle(player.x, player.y + player.height, 'jump');
         
-        // Audio
-        if (frames % 10 === 0) AudioSys.playSound('jump'); // Limit jump sound spam
+        if (frames % 10 === 0) AudioSys.playSound('jump');
     }
 
     window.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') jump(); });
@@ -734,6 +981,10 @@
         document.getElementById('game-over-screen').style.display = 'none';
         document.body.classList.remove('blueprint-mode');
         
+        // HIDE start screen images when game starts
+        if(startRevImg) startRevImg.style.display = 'none';
+        if(startGooseImg) startGooseImg.style.display = 'none';
+        
         player.baseX = canvas.width * 0.30;
         player.x = player.baseX;
         player.y = canvas.height / 2;
@@ -753,7 +1004,7 @@
 
         score = 0;
         frames = 0;
-        CONFIG.gameSpeed = 4;
+        CONFIG.gameSpeed = 3.2; 
         
         secretMode.active = false;
         secretMode.timer = 0;
@@ -783,7 +1034,7 @@
         battery.active = false; 
         
         AudioSys.playSound('powerup');
-        AudioSys.tempo = 1.6; // Speed up music slightly for intensity
+        AudioSys.tempo = 1.6; 
         
         document.body.classList.add('blueprint-mode');
         player.x = canvas.width * 0.6;
@@ -1032,382 +1283,15 @@
         updateParticles();
     }
 
-    function updateClash() {
-        clashTimer--;
-        
-        const centerX = player.baseX;
-        const centerY = player.baseY;
-        const fightGap = 50; 
-        
-        const gooseTargetX = centerX - fightGap;
-        const playerTargetX = centerX + fightGap;
-        
-        goose.x += (gooseTargetX - goose.x) * 0.1;
-        goose.y += (centerY - goose.y) * 0.1;
-        player.x += (playerTargetX - player.x) * 0.1;
-        
-        const t = frames * 0.1; 
-        const bobY = 20; const swayX = 10;
-        
-        goose.y = centerY + Math.sin(t) * bobY;
-        goose.x = gooseTargetX + Math.cos(t) * swayX;
-        
-        player.y = centerY + Math.sin(t + Math.PI) * bobY;
-        player.x = playerTargetX + Math.cos(t + Math.PI) * swayX;
-        
-        player.rotation = Math.sin(t) * 0.1; 
-
-        if (frames % 2 === 0) { 
-            clashCloudParticles.push({
-                x: centerX + (Math.random() - 0.5) * 80, 
-                y: centerY + (Math.random() - 0.5) * 60,
-                radius: 30, maxRadius: 90 + Math.random() * 40, 
-                growth: 1.0 + Math.random() * 0.5, alpha: 1.0, 
-                color: Math.random() > 0.5 ? '#fff' : '#f4f4f4',
-                layer: Math.random() > 0.95 ? 1 : 0 
-            });
-        }
-        for (let i = clashCloudParticles.length - 1; i >= 0; i--) {
-            let p = clashCloudParticles[i];
-            p.radius += p.growth; p.alpha -= 0.015; 
-            if (p.alpha <= 0) clashCloudParticles.splice(i, 1);
-        }
-        if (clashTimer <= 0) showEndScreen();
-    }
-
-    function updateParticles() {
-        for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i];
-            p.x += p.vx; p.y += p.vy; p.life--;
-            if (p.life <= 0) particles.splice(i, 1);
-        }
-    }
-
-    function drawClashClouds(layer) {
-        clashCloudParticles.forEach(p => {
-            if (p.layer !== layer) return;
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = (layer === 1) ? p.alpha * 0.6 : p.alpha;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = "#888";
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        });
-        ctx.globalAlpha = 1.0;
-        if (layer === 1) {
-            if (frames % 20 < 10) {
-                ctx.font = "bold 30px 'Comic Sans MS'"; ctx.fillStyle = "black";
-                ctx.fillText("#@&%!", player.baseX - 20, player.baseY - 70);
-            } else if (frames % 20 > 15) {
-                ctx.font = "bold 30px 'Comic Sans MS'"; ctx.fillStyle = "red";
-                ctx.fillText("HONK!", player.baseX + 40, player.baseY - 50);
-            }
-        }
-    }
-
-    function drawLightning(centerX, centerY) {
-        ctx.beginPath();
-        ctx.strokeStyle = Math.random() > 0.5 ? "#00ffff" : "#ffffff";
-        ctx.lineWidth = 3 + Math.random() * 3;
-        let lx = centerX - 20 + (Math.random() - 0.5) * 60;
-        let ly = centerY - 200; 
-        ctx.moveTo(lx, ly);
-        for(let i=0; i<12; i++) {
-            lx += (Math.random() - 0.5) * 60;
-            ly += Math.random() * 60;
-            ctx.lineTo(lx, ly);
-        }
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#00ffff";
-        ctx.stroke();
-        ctx.shadowBlur = 0; 
-    }
-
-    function drawSpaceDoodle(el) {
-        ctx.save();
-        ctx.translate(el.x, el.y);
-        ctx.rotate(el.rotation);
-        ctx.strokeStyle = el.color;
-        ctx.fillStyle = el.color.replace('0.2)', '0.05)'); 
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        
-        if (el.type === 'sun') {
-            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
-            const rays = 10;
-            for(let i=0; i<rays; i++) {
-                const angle = (i / rays) * Math.PI * 2;
-                const rStart = el.size/2 + 5;
-                const rEnd = el.size/2 + 25;
-                ctx.moveTo(Math.cos(angle)*rStart, Math.sin(angle)*rStart);
-                ctx.lineTo(Math.cos(angle)*rEnd, Math.sin(angle)*rEnd);
-            }
-            ctx.stroke();
-        } 
-        else if (el.type === 'moon') {
-            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.arc(-el.size/6, -el.size/6, el.size/6, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.arc(el.size/4, el.size/4, el.size/8, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.arc(-el.size/3, el.size/3, el.size/10, 0, Math.PI*2); ctx.stroke();
-        }
-        else if (el.type === 'earth') {
-            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(-el.size/3, -el.size/4);
-            ctx.quadraticCurveTo(0, -el.size/2, el.size/3, -el.size/4);
-            ctx.quadraticCurveTo(el.size/4, 0, -el.size/4, 0); ctx.closePath(); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(-el.size/4, el.size/4);
-            ctx.quadraticCurveTo(0, el.size/2, el.size/4, el.size/3);
-            ctx.quadraticCurveTo(0, 0, -el.size/4, el.size/4); ctx.stroke();
-        }
-        else if (el.type === 'comet') {
-            ctx.beginPath(); ctx.arc(0, 0, el.size/3, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.5, -el.size/3);
-            ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.8, 0);
-            ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.5, el.size/3); ctx.stroke();
-        }
-        else if (el.type === 'asteroid') {
-            ctx.beginPath();
-            const points = 8;
-            for(let i=0; i<=points; i++) {
-                const angle = (i / points) * Math.PI * 2;
-                const r = el.size/2 + (Math.sin(i * 345) * 5); 
-                const px = Math.cos(angle) * r; const py = Math.sin(angle) * r;
-                if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            }
-            ctx.stroke();
-        }
-        else if (el.type === 'planet') {
-            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.ellipse(0, 0, el.size/1.2, el.size/4, Math.PI/-6, 0, Math.PI*2); ctx.stroke();
-        }
-        ctx.restore();
-    }
-
-    function drawCoin(c) {
-        ctx.save();
-        ctx.translate(c.x, c.y);
-        const scale = 1 + Math.sin(frames * 0.1 + c.wobbleOffset) * 0.1;
-        ctx.scale(scale, scale);
-        
-        ctx.fillStyle = c.color;
-        ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.fill();
-        
-        drawWobblyLine(-c.radius, -c.radius*0.8, c.radius, -c.radius*0.8, "#000", 2); 
-        
-        ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 0, c.radius * 0.7, 0, Math.PI*2); ctx.stroke();
-        
-        ctx.fillStyle = "#fff"; ctx.font = `bold ${c.radius}px 'Comic Sans MS'`;
-        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(c.value, 0, 2);
-        ctx.restore();
-    }
-
-    function drawFloater(f) {
-        ctx.save();
-        ctx.globalAlpha = f.life / 60;
-        ctx.fillStyle = f.color;
-        ctx.strokeStyle = "#000"; ctx.lineWidth = 1;
-        ctx.font = "bold 24px 'Comic Sans MS'";
-        ctx.textAlign = "center";
-        ctx.fillText(f.text, f.x, f.y);
-        ctx.strokeText(f.text, f.x, f.y);
-        ctx.restore();
-    }
-
-    function drawBattery(x, y) {
-        drawDoodleRect(x, y, 30, 50, "#00e676", "#000"); 
-        ctx.fillStyle = "#888";
-        ctx.fillRect(x + 7, y - 6, 16, 6);
-        ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.strokeRect(x + 7, y - 6, 16, 6);
-        // Sparkle effect
-        if (frames % 20 < 10) {
-            ctx.fillStyle = "yellow";
-            ctx.beginPath(); ctx.arc(x - 5, y - 5, 5, 0, Math.PI*2); ctx.fill();
-        }
-    }
-
-    function drawBlueprintBackground() {
-        ctx.beginPath(); 
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; 
-        ctx.lineWidth = 1;
-        const gridSize = 40;
-        for (let x = -canvas.height; x < canvas.width; x += gridSize) { 
-            ctx.moveTo(x, 0); 
-            ctx.lineTo(x + canvas.height, canvas.height); 
-        }
-        ctx.stroke();
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (secretMode.active) drawBlueprintBackground(); else drawPaperBackground();
-        bgElements.forEach(el => drawSpaceDoodle(el));
-        drawClouds(secretMode.active);
-
-        const colors = ["#ffcc80", "#a5d6a7", "#90caf9"]; 
-        const strokes = ["#e65100", "#1b5e20", "#0d47a1"]; 
-
-        obstacles.forEach(obs => {
-            if (secretMode.active) {
-                ctx.save(); ctx.globalAlpha = 0.3;
-                drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, "#4fc3f7", "#fff");
-                drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, "#4fc3f7", "#fff");
-                ctx.restore();
-            } else {
-                drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, colors[obs.colorIndex], strokes[obs.colorIndex]);
-                drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, colors[obs.colorIndex], strokes[obs.colorIndex]);
-            }
-        });
-
-        if (battery.active) drawBattery(battery.x, battery.y + battery.wobble);
-        coins.forEach(c => drawCoin(c));
-
-        if (isClashing) drawClashClouds(0);
-        
-        if (secretMode.active) {
-            ctx.save();
-            const jitterX = (Math.random() - 0.5) * 15;
-            const jitterY = (Math.random() - 0.5) * 15;
-            let drawH = canvas.height;
-            let drawW = 100; 
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                const aspect = playerImg.width / playerImg.height;
-                drawW = drawH * aspect;
-            }
-            let imgX = -drawW * 0.3 + jitterX; 
-            let imgY = 0 + jitterY; 
-
-            ctx.shadowBlur = 40 + Math.random() * 40; ctx.shadowColor = "#00ffff"; 
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                ctx.drawImage(playerImg, imgX, imgY, drawW, drawH);
-                ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = 0.5;
-                ctx.drawImage(playerImg, imgX + 10, imgY + 5, drawW, drawH);
-                ctx.drawImage(playerImg, imgX - 10, imgY - 5, drawW, drawH);
-                ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1.0;
-
-                const eyeY = imgY + drawH * 0.42; const eyeSize = drawW * 0.12; 
-                ctx.shadowBlur = 50; ctx.shadowColor = "#00ffff"; ctx.fillStyle = "#e0ffff"; 
-                
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.48, eyeY, eyeSize, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.70, eyeY, eyeSize, 0, Math.PI*2); ctx.fill();
-                
-                ctx.fillStyle = "#00ffff";
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.48, eyeY, eyeSize * 0.5, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.70, eyeY, eyeSize * 0.5, 0, Math.PI*2); ctx.fill();
-            } else {
-                ctx.fillStyle = "#29b6f6"; ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
-            }
-            
-            if (frames % 8 < 4) {
-                drawLightning(canvas.width * 0.1, canvas.height * 0.5);
-                drawLightning(canvas.width * 0.2, canvas.height * 0.2);
-            }
-            ctx.restore();
-            drawGoose(player.x, player.y, player.rotation);
-        } else {
-            drawGoose(goose.x, goose.y);
-            ctx.save();
-            ctx.translate(player.x + player.width/2, player.y + player.height/2);
-            ctx.rotate(player.rotation);
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                const aspect = playerImg.width / playerImg.height;
-                const drawW = player.width * 1.5; const drawH = drawW / aspect;
-                ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
-            } else {
-                 ctx.fillStyle = "#29b6f6"; ctx.fillRect(-20, -20, 40, 40);
-                 ctx.strokeStyle = "black"; ctx.strokeRect(-20, -20, 40, 40);
-            }
-            ctx.restore();
-        }
-
-        if (isClashing) drawClashClouds(1);
-        
-        particles.forEach(p => {
-            ctx.fillStyle = p.color || "rgba(0,0,0,0.2)";
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.life / 5, 0, Math.PI * 2); ctx.fill();
-        });
-        
-        scoreFloater.forEach(f => drawFloater(f));
-        
-        if (secretMode.active) {
-            ctx.font = "bold 40px 'Comic Sans MS'";
-            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames * 0.1))})`;
-            ctx.textAlign = "center";
-            ctx.fillText("SUPERCHARGE!", canvas.width/2, 100);
-        }
-    }
-
-    // --- Doodle Helpers ---
-    function drawWobblyLine(x1, y1, x2, y2, color, thickness) {
-        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = thickness; ctx.lineCap = 'round';
-        const segments = 10; const dx = (x2 - x1) / segments; const dy = (y2 - y1) / segments;
-        ctx.moveTo(x1, y1);
-        for (let i = 1; i <= segments; i++) {
-            const offsetX = Math.sin(doodleTime + i) * 2; const offsetY = Math.cos(doodleTime + i * 2) * 2;
-            ctx.lineTo(x1 + dx * i + offsetX, y1 + dy * i + offsetY);
-        }
-        ctx.stroke();
-    }
-
-    function drawDoodleRect(x, y, w, h, fillColor, strokeColor) {
-        ctx.fillStyle = fillColor;
-        ctx.beginPath(); ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + w - 2, y + 5);
-        ctx.lineTo(x + w - 5, y + h - 2); ctx.lineTo(x + 3, y + h - 5); ctx.closePath(); ctx.fill();
-        drawWobblyLine(x, y, x + w, y, strokeColor, 3); drawWobblyLine(x + w, y, x + w, y + h, strokeColor, 3);
-        drawWobblyLine(x + w, y + h, x, y + h, strokeColor, 3); drawWobblyLine(x, y + h, x, y, strokeColor, 3);
-        ctx.beginPath(); ctx.strokeStyle = "rgba(0,0,0,0.1)"; ctx.lineWidth = 2;
-        for(let i=10; i<w; i+=15) { ctx.moveTo(x + i, y + 5); ctx.lineTo(x + i - 5, y + h - 5); } ctx.stroke();
-    }
-
-    function drawClouds() {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; ctx.beginPath();
-        const t = frames * 0.002;
-        for(let i = 0; i < 5; i++) {
-             let cx = ((i * 300) + t * 100) % (canvas.width + 200) - 100;
-             let cy = 50 + Math.sin(i + t) * 30;
-             ctx.arc(cx, cy, 40, 0, Math.PI * 2);
-             ctx.arc(cx + 30, cy - 10, 50, 0, Math.PI * 2);
-             ctx.arc(cx + 60, cy, 40, 0, Math.PI * 2);
-        }
-        ctx.fill();
-    }
-
-    function drawPaperBackground() {
-        ctx.beginPath(); ctx.strokeStyle = "rgba(173, 216, 230, 0.5)"; ctx.lineWidth = 1;
-        const gridSize = 40;
-        for (let x = 0; x < canvas.width; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
-        for (let y = 0; y < canvas.height; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
-        ctx.stroke();
-        ctx.beginPath(); ctx.strokeStyle = "rgba(255, 182, 193, 0.8)"; ctx.lineWidth = 2;
-        ctx.moveTo(60, 0); ctx.lineTo(60, canvas.height); ctx.stroke();
-    }
-    
-    function drawGoose(x, y) {
-        const wiggle = Math.sin(frames * 0.2) * 5;
-        ctx.save(); ctx.translate(x, y);
-        ctx.fillStyle = "white"; ctx.strokeStyle = "black"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(20, -5); ctx.quadraticCurveTo(40, -15, 45 + wiggle/2, -30); ctx.stroke();
-        ctx.beginPath(); ctx.arc(45 + wiggle/2, -30, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "orange"; ctx.beginPath(); ctx.moveTo(53 + wiggle/2, -33); ctx.lineTo(65 + wiggle/2, -28); ctx.lineTo(53 + wiggle/2, -25); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "black"; ctx.beginPath(); ctx.arc(48 + wiggle/2, -32, 2, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(45 + wiggle/2, -36); ctx.lineTo(52 + wiggle/2, -34); ctx.stroke();
-        ctx.fillStyle = "white"; const wingY = Math.sin(frames * 0.5) * 15;
-        ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(10, -25 + wingY, -10, -10 + wingY); ctx.fill(); ctx.stroke();
-        ctx.strokeStyle = "orange"; ctx.beginPath(); ctx.moveTo(-5, 15); ctx.lineTo(-10 + wiggle, 25);
-        ctx.moveTo(5, 15); ctx.lineTo(10 + wiggle, 28); ctx.stroke();
-        if (!isClashing && frames % 100 < 40) {
-            ctx.font = "bold 20px 'Comic Sans MS'"; ctx.fillStyle = "red"; ctx.fillText("HONK!", 50, -50);
-        }
-        ctx.restore();
-    }
-
+    // --- Loop ---
     function loop() {
-        if (isPlaying || isClashing) { update(); draw(); requestAnimationFrame(loop); } else if (isGameOver) { draw(); }
+        if (isPlaying || isClashing) { 
+            update(); 
+            draw(); 
+            requestAnimationFrame(loop); 
+        } else if (isGameOver) { 
+            draw(); 
+        }
     }
 
     document.getElementById('start-btn').addEventListener('click', startGame);
