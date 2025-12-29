@@ -85,35 +85,45 @@
             font-size: 1.5rem;
         }
         
-        /* Start Screen specific layout */
-        #start-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 280px; 
-            z-index: 50; /* Ensure buttons are clickable */
-        }
-
-        /* Start Screen Characters */
+       /* Start Screen Characters */
         #start-rev-img {
             position: absolute;
-            right: 0; /* Pinned to right edge */
+            right: 0;
             bottom: 0;
-            height: 80vh; /* Takes up 80% of screen height */
+            
+            /* HEIGHT: HUGE (85% of screen) */
+            height: 85vh; 
+            
+            /* WIDTH: Remove limits so he can grow tall */
+            width: auto;  
+            max-width: none; 
+            
+            /* ANCHOR: This is the magic fix. Sits him on the bottom-right floor. */
             object-fit: contain;
+            object-position: bottom right; 
+            
             pointer-events: none;
-            z-index: 15; 
+            z-index: 1; 
             transform: scaleX(-1); /* Face left */
         }
+
         #start-goose-img {
             position: absolute;
-            left: 0; /* Pinned to left edge */
+            left: 0;
             bottom: 0;
-            height: 50vh;
+            
+            /* HEIGHT: Bigger (60% of screen) */
+            height: 60vh; 
+            
+            width: auto;
+            max-width: none;
+            
+            /* ANCHOR: Sits it on the bottom-left floor. */
             object-fit: contain;
+            object-position: bottom left; 
+            
             pointer-events: none;
-            z-index: 15; 
+            z-index: 1; 
         }
 
         .spin-in {
@@ -1331,6 +1341,7 @@
 </script>
 </body>
 </html>
+
 
 
 
