@@ -68,73 +68,76 @@
         
         .hidden { display: none !important; }
 
-        .message-box {
+      .message-box {
             background: #ffffff;
-            border: 8px solid #000; /* Thicker, cartoon-style border */
+            border: 8px solid #000;
             border-radius: 25px;
-            padding: 60px; /* Much bigger box */
+            padding: 40px; 
             text-align: center;
             pointer-events: auto;
-            
-            /* Cartoon Shadow to make it pop */
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
             
-            display: none;
-            
             /* Sizing */
-            min-width: 450px; /* Force it to be wide */
+            min-width: 300px;
+            max-width: 500px;
             
-            /* Flex Centering */
+            /* FLEXBOX MAGIC (Fixes the layout) */
+            display: flex;             /* Turn on flexbox */
+            flex-direction: column;    /* Stack items Top-to-Bottom */
+            justify-content: center;   /* Center vertically */
+            align-items: center;       /* Center horizontally */
+            gap: 20px;                 /* Add space between text and button */
+            
+            /* Positioning */
             position: relative; 
             margin: auto; 
+            z-index: 20;
             
-            /* Text Size */
-            font-size: 1.8rem;
-            font-weight: bold;
-            font-family: 'Barriecito', cursive; /* Match your title font */
+            /* Font */
+            font-size: 1.5rem;
+            font-family: 'Barriecito', cursive;
         }
         
-       /* Start Screen Characters */
-        #start-rev-img {
+      #start-rev-img {
             position: absolute;
             right: 0;
-            bottom: 0;
             
-            /* HEIGHT: HUGE (85% of screen) */
+            /* Sink him slightly below the floor to hide the cut-off */
+            bottom: -2vh; 
+            
+            /* Height settings */
             height: 85vh; 
-            
-            /* WIDTH: Remove limits so he can grow tall */
             width: auto;  
             max-width: none; 
             
-            /* ANCHOR: This is the magic fix. Sits him on the bottom-right floor. */
             object-fit: contain;
             object-position: bottom right; 
             
             pointer-events: none;
             z-index: 1; 
-            transform: scaleX(-1); /* Face left */
+            transform: scaleX(-1); 
         }
 
         #start-goose-img {
             position: absolute;
             left: 0;
-            bottom: 0;
             
-            /* HEIGHT: Bigger (60% of screen) */
-            height: 60vh; 
+            /* Sink it slightly */
+            bottom: -2vh;
+            
+            /* Make it a bit bigger */
+            height: 55vh; 
             
             width: auto;
             max-width: none;
             
-            /* ANCHOR: Sits it on the bottom-left floor. */
             object-fit: contain;
             object-position: bottom left; 
             
             pointer-events: none;
             z-index: 1; 
         }
-
+        
         .spin-in {
             display: block !important;
             animation: spinIn 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -1350,6 +1353,7 @@
 </script>
 </body>
 </html>
+
 
 
 
