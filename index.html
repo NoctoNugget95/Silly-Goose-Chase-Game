@@ -389,8 +389,15 @@
 
    // --- 3. ASSET LOADING & SETUP ---
 
-    // 3a. Start Screen Images
-    // FIX: We define the variables the game loop is looking for (startRevImg)
+   // --- 3. ASSET LOADING & SETUP ---
+
+    // 3a. Image Assets
+    
+    // 1. The Player Character (Crucial Fix!)
+    const playerImg = new Image();
+    playerImg.src = PERMANENT_PLAYER_SVG; // Uses 'sprite.png'
+
+    // 2. Start Screen Characters
     const startRevImg = new Image();
     startRevImg.src = START_SCREEN_REV_SRC;
 
@@ -1310,6 +1317,7 @@
 </script>
 </body>
 </html>
+
 
 
 
