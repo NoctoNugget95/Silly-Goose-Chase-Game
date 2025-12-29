@@ -16,7 +16,12 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f0f0f0; /* Paper color */
+           /* New Background: A subtle blueprint/grid style */
+            background-color: #f0f0f0;
+            background-image: 
+                linear-gradient(#e0e0e0 1px, transparent 1px),
+                linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 40px 40px;
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
             touch-action: none; 
             -webkit-user-select: none;
@@ -64,25 +69,29 @@
         .hidden { display: none !important; }
 
         .message-box {
-            background: rgba(255, 255, 255, 0.95);
-            border: 6px solid #333; /* Thicker border */
-            border-radius: 20px;
-            padding: 40px; /* More breathing room */
+            background: #ffffff;
+            border: 8px solid #000; /* Thicker, cartoon-style border */
+            border-radius: 25px;
+            padding: 60px; /* Much bigger box */
             text-align: center;
             pointer-events: auto;
+            
+            /* Cartoon Shadow to make it pop */
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
+            
             display: none;
             
             /* Sizing */
-            min-width: 320px; /* Force it to be wider */
-            width: auto;
+            min-width: 450px; /* Force it to be wide */
             
-            /* Flex Centering Trick (replaces position:absolute) */
+            /* Flex Centering */
             position: relative; 
-            margin: auto; /* This forces it to center in the flex container */
+            margin: auto; 
             
-            /* Make text bigger */
-            font-size: 1.5rem;
+            /* Text Size */
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: 'Barriecito', cursive; /* Match your title font */
         }
         
        /* Start Screen Characters */
@@ -1341,6 +1350,7 @@
 </script>
 </body>
 </html>
+
 
 
 
