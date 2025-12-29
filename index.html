@@ -356,7 +356,7 @@
         doodleWobbleSpeed: 0.1,
         clashDuration: 180,
         batterySpawnChance: 0.0005, 
-        coinChancePerGap: 0.03
+        coinChancePerGap: 0.1
     };
 
     // Canvas Globals
@@ -1231,7 +1231,7 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
-    function startGame() {
+   function startGame() {
         AudioSys.init();
         if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
             AudioSys.ctx.resume();
@@ -1239,13 +1239,16 @@
         AudioSys.playTrack('main');
         AudioSys.tempo = 1.45;
 
+        // 1. Hide the UI text/buttons
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('main-title').classList.add('hidden');
         document.getElementById('game-over-screen').className = 'message-box';
         document.getElementById('game-over-screen').style.display = 'none';
         
-        if(startRevImg) startRevImg.style.display = 'none';
-        if(startGooseImg) startGooseImg.style.display = 'none';
+        // 2. Hide the Start Screen Characters (FIXED)
+        // We must use 'revImg' (the ID on the screen), NOT 'startRevImg' (the internal loader)
+        if(revImg) revImg.style.display = 'none';
+        if(gooseImg) gooseImg.style.display = 'none';
         
         document.body.classList.remove('blueprint-mode');
         
@@ -1268,6 +1271,8 @@
 
         score = 0;
         frames = 0;
+        
+        // Reset Speed
         CONFIG.gameSpeed = 3.2; 
         
         secretMode.active = false;
