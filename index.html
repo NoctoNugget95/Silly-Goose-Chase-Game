@@ -387,24 +387,31 @@
 
     // --- 3. ASSET LOADING & SETUP ---
 
-   // --- 3. ASSET LOADING & SETUP ---
+// --- 3. ASSET LOADING & SETUP ---
 
-   // --- 3. ASSET LOADING & SETUP ---
-
-    // 3a. Image Assets
-    
-    // 1. The Player Character (Crucial Fix!)
+    // 1. The Player Character (Master Loader)
     const playerImg = new Image();
-    playerImg.src = PERMANENT_PLAYER_SVG; // Uses 'sprite.png'
+    
+    // Add a "Detective" to tell us if the file is missing
+    playerImg.onerror = function() {
+        console.error("Could not load sprite.png! Checking path...");
+        // Use the fallback blue box if it fails, but don't crash
+        playerImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PC9zdmc+";
+    };
+    
+    // Set the source (Trim removes any accidental spaces)
+    if (PERMANENT_PLAYER_SVG) {
+        playerImg.src = PERMANENT_PLAYER_SVG.trim();
+    }
 
     // 2. Start Screen Characters
     const startRevImg = new Image();
-    startRevImg.src = START_SCREEN_REV_SRC;
+    if (START_SCREEN_REV_SRC) startRevImg.src = START_SCREEN_REV_SRC.trim();
 
     const startGooseImg = new Image();
-    startGooseImg.src = START_SCREEN_GOOSE_SRC;
+    if (START_SCREEN_GOOSE_SRC) startGooseImg.src = START_SCREEN_GOOSE_SRC.trim();
 
-    // HTML Overlay Elements (Keeps the start screen working)
+    // 3. HTML Overlay Elements (Keeps the start screen working)
     const revImg = document.getElementById('start-rev-img');
     const gooseImg = document.getElementById('start-goose-img');
     
@@ -420,34 +427,16 @@
             gooseImg.style.display = 'block';
         }
     }
-    
-// --- 3b. Audio Setup (The missing link!) ---
-    const custom_audio = {}; // This creates the empty container
 
-    // This loops through your file list and loads each sound
+    // 4. Audio Setup
+    const custom_audio = {}; 
+
     for (let key in AUDIO_FILES) {
         if (AUDIO_FILES[key] && AUDIO_FILES[key].length > 0) {
             custom_audio[key] = new Audio(AUDIO_FILES[key]);
-            // Optional: Lower volume a bit so it doesn't blast ears
             custom_audio[key].volume = 0.4; 
         }
     }
-    // 3c. In-Game Player Sprite
-    const playerGameImg = new Image();
-    // Default Fallback (Blue Box SVG)
-    const FALLBACK_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PHRleHQgeT0iNTA1IiB5PSI1MCUiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIyNCI+PzwvdGV4dD48L3N2Zz4=";
-    playerGameImg.src = FALLBACK_SVG; // Set default immediately
-
-    try {
-        if (PERMANENT_PLAYER_SVG && PERMANENT_PLAYER_SVG.trim().length > 1) {
-            if (PERMANENT_PLAYER_SVG.trim().startsWith('<')) {
-                const blob = new Blob([PERMANENT_PLAYER_SVG], {type: 'image/svg+xml'});
-                playerGameImg.src = URL.createObjectURL(blob);
-            } else {
-                playerGameImg.src = PERMANENT_PLAYER_SVG;
-            }
-        }
-    } catch (e) { console.error("Sprite load error", e); }
 
     // --- 4. AUDIO ENGINE ---
     const AudioSys = {
@@ -1328,6 +1317,7 @@
 </script>
 </body>
 </html>
+
 
 
 
