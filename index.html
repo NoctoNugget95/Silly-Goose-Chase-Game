@@ -1344,6 +1344,16 @@
         loop();
     }
     
+    function loop() {
+        if (isPlaying || isClashing) { 
+            update(); 
+            draw(); 
+            requestAnimationFrame(loop); 
+        } else if (isGameOver) { 
+            draw(); 
+        }
+    }
+    
     // --- EVENTS & BOOT ---
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
@@ -1373,6 +1383,7 @@
 </script>
 </body>
 </html>
+
 
 
 
