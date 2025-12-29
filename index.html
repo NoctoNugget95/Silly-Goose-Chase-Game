@@ -68,14 +68,14 @@
         
         .hidden { display: none !important; }
 
-      .message-box {
+     .message-box {
             /* 1. Hide by default */
             display: none; 
             
-            /* 2. MAKE IT CLICKABLE (This was missing!) */
+            /* 2. CRITICAL FIX: Allow clicking on this box! */
             pointer-events: auto; 
             
-            /* 3. Layout */
+            /* 3. Flex Layout */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -89,7 +89,7 @@
             text-align: center;
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
             
-            /* 5. Position */
+            /* 5. Sizing & Position */
             min-width: 300px;
             max-width: 500px;
             position: relative; 
@@ -314,7 +314,7 @@
     <!-- Start Screen UI -->
     <div id="start-screen" class="message-box active">
         <p id="instruction-text">Tap repeatedly to fly!</p>
-        <button id="start-btn">Start Flying</button>
+        <button id="start-btn" onclick="startGame()">Start Flying</button>
     </div>
     
     <!-- START SCREEN IMAGES (Static Config) -->
@@ -1357,6 +1357,7 @@
 </script>
 </body>
 </html>
+
 
 
 
