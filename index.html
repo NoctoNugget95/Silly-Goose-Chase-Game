@@ -69,16 +69,19 @@
         .hidden { display: none !important; }
 
       .message-box {
-            /* 1. Hide by default so we don't see double boxes */
+            /* 1. Hide by default */
             display: none; 
             
-            /* 2. Flex Layout settings (waiting to be turned on) */
+            /* 2. MAKE IT CLICKABLE (This was missing!) */
+            pointer-events: auto; 
+            
+            /* 3. Layout */
             flex-direction: column;
             justify-content: center;
             align-items: center;
             gap: 20px;
             
-            /* 3. Visuals */
+            /* 4. Visuals */
             background: #ffffff;
             border: 8px solid #000;
             border-radius: 25px;
@@ -86,7 +89,7 @@
             text-align: center;
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
             
-            /* 4. Sizing & Position */
+            /* 5. Position */
             min-width: 300px;
             max-width: 500px;
             position: relative; 
@@ -96,7 +99,7 @@
             font-size: 1.5rem;
             font-family: 'Barriecito', cursive;
         }
-
+        
         /* NEW RULE: Use this to show the box */
         .message-box.active {
             display: flex !important;
@@ -1354,6 +1357,7 @@
 </script>
 </body>
 </html>
+
 
 
 
