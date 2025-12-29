@@ -1351,7 +1351,12 @@
         // Start screen music listener
         window.addEventListener('click', function musicStarter() {
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
-            if (!AudioSys.isPlaying && CUSTOM_AUDIO.music_start) AudioSys.playTrack('start_screen');
+            
+            // FIX: We check 'AUDIO_FILES', not 'CUSTOM_AUDIO'
+            if (!AudioSys.isPlaying && AUDIO_FILES.music_start) {
+                AudioSys.playTrack('start_screen');
+            }
+            
             window.removeEventListener('click', musicStarter);
         }, {once:true});
     };
@@ -1359,6 +1364,7 @@
 </script>
 </body>
 </html>
+
 
 
 
