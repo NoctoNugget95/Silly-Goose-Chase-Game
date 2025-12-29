@@ -105,31 +105,28 @@
             display: flex !important;
         }
         
-     #start-rev-img {
+    #start-rev-img {
             position: absolute;
             right: 0;
             bottom: 0;
             
-            /* TARGET SIZE: Try to be 85% of the screen height */
+            /* TARGET SIZE: Tall (85% of screen) */
             height: 85vh; 
             
-            /* SAFETY LIMIT: Never take up more than 45% of the width */
-            /* This ensures he never covers the Start Button in the middle */
+            /* SAFETY LIMIT: Never wider than 45% of screen width */
+            /* This protects the center buttons */
+            width: auto;
             max-width: 45vw; 
             
-            /* THE FIX: "Contain" prevents cropping. 
-               It forces the whole image to fit inside the box defined above. */
+            /* THE MAGIC: Shrink cleanly if the safety limit is hit */
             object-fit: contain;
-            
-            /* ANCHOR: Lock him to the bottom-right of his box */
             object-position: bottom right; 
             
             pointer-events: none;
             z-index: 1; 
             
-            /* FLIP: Face left, but anchor the flip to the right edge so he doesn't jump */
-            transform: scaleX(-1);
-            transform-origin: bottom right; 
+            /* FLIP: Face left (removed the bad 'transform-origin' line) */
+            transform: scaleX(-1); 
         }
         
         #start-goose-img {
@@ -1390,6 +1387,7 @@
 </script>
 </body>
 </html>
+
 
 
 
