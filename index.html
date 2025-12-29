@@ -93,8 +93,8 @@
         /* Start Screen Characters */
         #start-rev-img {
             position: absolute;
-            right: 20; /* Pinned to right edge */
-            bottom: 20;
+            right: 0; /* Pinned to right edge */
+            bottom: 0;
             height: 80vh; /* Takes up 45% of screen height */
             max-height: 1500px;
             object-fit: contain;
@@ -387,17 +387,31 @@
 
     // --- 3. ASSET LOADING & SETUP ---
 
+   // --- 3. ASSET LOADING & SETUP ---
+
     // 3a. Start Screen Images
+    // FIX: We define the variables the game loop is looking for (startRevImg)
+    const startRevImg = new Image();
+    startRevImg.src = START_SCREEN_REV_SRC;
+
+    const startGooseImg = new Image();
+    startGooseImg.src = START_SCREEN_GOOSE_SRC;
+
+    // HTML Overlay Elements (Keeps the start screen working)
     const revImg = document.getElementById('start-rev-img');
     const gooseImg = document.getElementById('start-goose-img');
     
     if (START_SCREEN_REV_SRC && START_SCREEN_REV_SRC.length > 1) {
-        revImg.src = START_SCREEN_REV_SRC;
-        revImg.style.display = 'block';
+        if (revImg) {
+            revImg.src = START_SCREEN_REV_SRC;
+            revImg.style.display = 'block';
+        }
     }
     if (START_SCREEN_GOOSE_SRC && START_SCREEN_GOOSE_SRC.length > 1) {
-        gooseImg.src = START_SCREEN_GOOSE_SRC;
-        gooseImg.style.display = 'block';
+        if (gooseImg) {
+            gooseImg.src = START_SCREEN_GOOSE_SRC;
+            gooseImg.style.display = 'block';
+        }
     }
 
     // 3b. In-Game Player Sprite
@@ -1296,6 +1310,7 @@
 </script>
 </body>
 </html>
+
 
 
 
