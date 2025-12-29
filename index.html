@@ -1269,7 +1269,7 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
-   function startGame() {
+  function startGame() {
         AudioSys.init();
         if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
             AudioSys.ctx.resume();
@@ -1277,18 +1277,20 @@
         AudioSys.playTrack('main');
         AudioSys.tempo = 1.45;
 
-    // 1. Hide the UI
-        document.getElementById('start-screen').classList.remove('active'); // Remove class
-        document.getElementById('game-over-screen').classList.remove('active'); // Remove class
+        // 1. Hide the UI (Using the new class system)
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('game-over-screen').classList.remove('active');
         document.getElementById('main-title').classList.add('hidden');
         
-        // 2. Hide the Start Screen Characters (FIXED)
-        // We must use 'revImg' (the ID on the screen), NOT 'startRevImg' (the internal loader)
+        // 2. Hide the Characters (Explicitly hide them)
+        const revImg = document.getElementById('start-rev-img');
+        const gooseImg = document.getElementById('start-goose-img');
         if(revImg) revImg.style.display = 'none';
         if(gooseImg) gooseImg.style.display = 'none';
         
         document.body.classList.remove('blueprint-mode');
         
+        // 3. Reset Game State
         player.baseX = canvas.width * 0.30;
         player.x = player.baseX;
         player.y = canvas.height / 2;
@@ -1296,7 +1298,7 @@
         player.rotation = 0;
         
         goose.x = -150;
-        goose.targetX = 70;
+        goose.targetX = 70; // Matches your "move to right" request
         
         obstacles = [];
         particles = [];
@@ -1308,8 +1310,6 @@
 
         score = 0;
         frames = 0;
-        
-        // Reset Speed
         CONFIG.gameSpeed = 3.2; 
         
         secretMode.active = false;
@@ -1324,17 +1324,7 @@
         
         loop();
     }
-
-    function loop() {
-        if (isPlaying || isClashing) { 
-            update(); 
-            draw(); 
-            requestAnimationFrame(loop); 
-        } else if (isGameOver) { 
-            draw(); 
-        }
-    }
-
+    
     // --- EVENTS & BOOT ---
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
@@ -1344,7 +1334,7 @@
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, { passive: false });
     canvas.addEventListener('mousedown', (e) => { jump(); });
 
-    window.onload = function() {
+   window.onload = function() {
         resize(); // Ensure canvas is ready
         document.getElementById('loading').style.display = 'none';
         
@@ -1360,10 +1350,11 @@
             window.removeEventListener('click', musicStarter);
         }, {once:true});
     };
-
+    
 </script>
 </body>
 </html>
+
 
 
 
