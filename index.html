@@ -105,26 +105,33 @@
             display: flex !important;
         }
         
-      #start-rev-img {
+     #start-rev-img {
             position: absolute;
             right: 0;
+            bottom: 0;
             
-            /* Sink him slightly below the floor to hide the cut-off */
-            bottom: -2vh; 
-            
-            /* Height settings */
+            /* TARGET SIZE: Try to be 85% of the screen height */
             height: 85vh; 
-            width: auto;  
-            max-width: none; 
             
+            /* SAFETY LIMIT: Never take up more than 45% of the width */
+            /* This ensures he never covers the Start Button in the middle */
+            max-width: 45vw; 
+            
+            /* THE FIX: "Contain" prevents cropping. 
+               It forces the whole image to fit inside the box defined above. */
             object-fit: contain;
+            
+            /* ANCHOR: Lock him to the bottom-right of his box */
             object-position: bottom right; 
             
             pointer-events: none;
             z-index: 1; 
-            transform: scaleX(-1); 
+            
+            /* FLIP: Face left, but anchor the flip to the right edge so he doesn't jump */
+            transform: scaleX(-1);
+            transform-origin: bottom right; 
         }
-
+        
         #start-goose-img {
             position: absolute;
             left: 0;
@@ -1383,6 +1390,7 @@
 </script>
 </body>
 </html>
+
 
 
 
