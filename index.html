@@ -1273,19 +1273,35 @@
     }
 
   function startGame() {
-        AudioSys.init();
-        if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
-            AudioSys.ctx.resume();
-        }
-        AudioSys.playTrack('main');
-        AudioSys.tempo = 1.45;
+        console.log("Start Button Clicked!"); 
 
-        // 1. Hide the UI (Using the new class system)
-        document.getElementById('start-screen').classList.remove('active');
-        document.getElementById('game-over-screen').classList.remove('active');
-        document.getElementById('main-title').classList.add('hidden');
+        // 1. Audio Wake-up
+        if (typeof AudioSys !== 'undefined') {
+            AudioSys.init();
+            if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
+                AudioSys.ctx.resume();
+            }
+            AudioSys.playTrack('main');
+            AudioSys.tempo = 1.45;
+        }
+
+        // 2. FORCE HIDE THE UI
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const mainTitle = document.getElementById('main-title');
         
-        // 2. Hide the Characters (Explicitly hide them)
+        // Remove class AND force style to none
+        if (startScreen) {
+            startScreen.classList.remove('active');
+            startScreen.style.display = 'none'; 
+        }
+        if (gameOverScreen) {
+            gameOverScreen.classList.remove('active');
+            gameOverScreen.style.display = 'none';
+        }
+        if (mainTitle) mainTitle.classList.add('hidden');
+        
+        // 3. Hide Characters
         const revImg = document.getElementById('start-rev-img');
         const gooseImg = document.getElementById('start-goose-img');
         if(revImg) revImg.style.display = 'none';
@@ -1293,7 +1309,7 @@
         
         document.body.classList.remove('blueprint-mode');
         
-        // 3. Reset Game State
+        // 4. Reset Game State
         player.baseX = canvas.width * 0.30;
         player.x = player.baseX;
         player.y = canvas.height / 2;
@@ -1301,7 +1317,7 @@
         player.rotation = 0;
         
         goose.x = -150;
-        goose.targetX = 70; // Matches your "move to right" request
+        goose.targetX = 70;
         
         obstacles = [];
         particles = [];
@@ -1313,7 +1329,7 @@
 
         score = 0;
         frames = 0;
-        CONFIG.gameSpeed = 3.2; 
+        CONFIG.gameSpeed = 3.5; 
         
         secretMode.active = false;
         secretMode.timer = 0;
@@ -1357,6 +1373,7 @@
 </script>
 </body>
 </html>
+
 
 
 
