@@ -69,33 +69,37 @@
         .hidden { display: none !important; }
 
       .message-box {
+            /* 1. Hide by default so we don't see double boxes */
+            display: none; 
+            
+            /* 2. Flex Layout settings (waiting to be turned on) */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            
+            /* 3. Visuals */
             background: #ffffff;
             border: 8px solid #000;
             border-radius: 25px;
-            padding: 40px; 
+            padding: 40px;
             text-align: center;
-            pointer-events: auto;
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
             
-            /* Sizing */
+            /* 4. Sizing & Position */
             min-width: 300px;
             max-width: 500px;
-            
-            /* FLEXBOX MAGIC (Fixes the layout) */
-            display: flex;             /* Turn on flexbox */
-            flex-direction: column;    /* Stack items Top-to-Bottom */
-            justify-content: center;   /* Center vertically */
-            align-items: center;       /* Center horizontally */
-            gap: 20px;                 /* Add space between text and button */
-            
-            /* Positioning */
             position: relative; 
             margin: auto; 
             z-index: 20;
             
-            /* Font */
             font-size: 1.5rem;
             font-family: 'Barriecito', cursive;
+        }
+
+        /* NEW RULE: Use this to show the box */
+        .message-box.active {
+            display: flex !important;
         }
         
       #start-rev-img {
@@ -305,7 +309,7 @@
     <h1 id="main-title">Silly Goose Chase</h1>
 
     <!-- Start Screen UI -->
-    <div id="start-screen" class="message-box" style="display: flex;">
+    <div id="start-screen" class="message-box active">
         <p id="instruction-text">Tap repeatedly to fly!</p>
         <button id="start-btn">Start Flying</button>
     </div>
@@ -1116,12 +1120,15 @@
                 p.radius += p.growth; p.alpha -= 0.015; 
                 if (p.alpha <= 0) clashCloudParticles.splice(i, 1);
             }
-            if (clashTimer <= 0) {
+           if (clashTimer <= 0) {
                 AudioSys.stopMusic();
                 isGameOver = true;
                 isClashing = false;
                 document.getElementById('final-score').innerText = score;
+                
+                // NEW: Show Game Over screen using the class
                 const endScreen = document.getElementById('game-over-screen');
+                endScreen.classList.add('active'); // Add class to show it
                 endScreen.classList.add('spin-in');
             }
             return; 
@@ -1270,11 +1277,10 @@
         AudioSys.playTrack('main');
         AudioSys.tempo = 1.45;
 
-        // 1. Hide the UI text/buttons
-        document.getElementById('start-screen').style.display = 'none';
+    // 1. Hide the UI
+        document.getElementById('start-screen').classList.remove('active'); // Remove class
+        document.getElementById('game-over-screen').classList.remove('active'); // Remove class
         document.getElementById('main-title').classList.add('hidden');
-        document.getElementById('game-over-screen').className = 'message-box';
-        document.getElementById('game-over-screen').style.display = 'none';
         
         // 2. Hide the Start Screen Characters (FIXED)
         // We must use 'revImg' (the ID on the screen), NOT 'startRevImg' (the internal loader)
@@ -1353,6 +1359,7 @@
 </script>
 </body>
 </html>
+
 
 
 
