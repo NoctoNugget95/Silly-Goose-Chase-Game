@@ -107,25 +107,25 @@
         
     #start-rev-img {
             position: absolute;
-            right: 0;
             
-            /* MATCHING THE GOOSE: Sink him into the floor */
+            /* RESET: Put him exactly against the right wall */
+            right: 0; 
+            
+            /* Height & Anchor */
             bottom: -2vh; 
-            
-            /* MATCHING THE GOOSE: Set height, but remove strict width limits */
             height: 85vh; 
+            
+            /* Size handling */
             width: auto;
             max-width: none; 
             
-            /* Keep him contained so he doesn't pixelate */
             object-fit: contain;
             object-position: bottom right; 
             
             pointer-events: none;
             z-index: 1; 
             
-            /* Flip him */
-            transform: scaleX(-1); 
+            /* DELETED: transform: scaleX(-1); <-- No longer needed! */
         }
         
         #start-goose-img {
@@ -1386,6 +1386,7 @@
 </script>
 </body>
 </html>
+
 
 
 
