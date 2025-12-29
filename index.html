@@ -420,8 +420,19 @@
             gooseImg.style.display = 'block';
         }
     }
+    
+// --- 3b. Audio Setup (The missing link!) ---
+    const custom_audio = {}; // This creates the empty container
 
-    // 3b. In-Game Player Sprite
+    // This loops through your file list and loads each sound
+    for (let key in AUDIO_FILES) {
+        if (AUDIO_FILES[key] && AUDIO_FILES[key].length > 0) {
+            custom_audio[key] = new Audio(AUDIO_FILES[key]);
+            // Optional: Lower volume a bit so it doesn't blast ears
+            custom_audio[key].volume = 0.4; 
+        }
+    }
+    // 3c. In-Game Player Sprite
     const playerGameImg = new Image();
     // Default Fallback (Blue Box SVG)
     const FALLBACK_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PHRleHQgeT0iNTA1IiB5PSI1MCUiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIyNCI+PzwvdGV4dD48L3N2Zz4=";
@@ -1317,6 +1328,7 @@
 </script>
 </body>
 </html>
+
 
 
 
