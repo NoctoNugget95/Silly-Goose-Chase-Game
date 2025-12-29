@@ -108,24 +108,23 @@
     #start-rev-img {
             position: absolute;
             right: 0;
-            bottom: 0;
             
-            /* TARGET SIZE: Tall (85% of screen) */
+            /* MATCHING THE GOOSE: Sink him into the floor */
+            bottom: -2vh; 
+            
+            /* MATCHING THE GOOSE: Set height, but remove strict width limits */
             height: 85vh; 
-            
-            /* SAFETY LIMIT: Never wider than 45% of screen width */
-            /* This protects the center buttons */
             width: auto;
-            max-width: 45vw; 
+            max-width: none; 
             
-            /* THE MAGIC: Shrink cleanly if the safety limit is hit */
+            /* Keep him contained so he doesn't pixelate */
             object-fit: contain;
             object-position: bottom right; 
             
             pointer-events: none;
             z-index: 1; 
             
-            /* FLIP: Face left (removed the bad 'transform-origin' line) */
+            /* Flip him */
             transform: scaleX(-1); 
         }
         
@@ -386,13 +385,13 @@
     const CONFIG = {
         gravity: 0.2, 
         jumpStrength: -6.5,
-        gameSpeed: 3.5, 
+        gameSpeed: 3.3, 
         spawnRate: 240, 
         gapSize: 220,   
         playerScale: 0.15,
         doodleWobbleSpeed: 0.1,
         clashDuration: 180,
-        batterySpawnChance: 0.0005, 
+        batterySpawnChance: 0.005, 
         coinChancePerGap: 0.1
     };
 
@@ -1387,6 +1386,7 @@
 </script>
 </body>
 </html>
+
 
 
 
