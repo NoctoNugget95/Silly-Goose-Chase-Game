@@ -1031,26 +1031,49 @@
         loop();
     }
 
-    function update() {
-        frames++; doodleTime += CONFIG.doodleWobbleSpeed;
-        
-        for (let i = bgElements.length - 1; i >= 0; i--) {
-            let el = bgElements[i]; el.x -= CONFIG.gameSpeed * el.speedFactor;
-            if (el.x < -el.size * 2) bgElements.splice(i, 1);
-        }
-        if (frames % 120 === 0) createBgElement(canvas.width + 100);
-
+  function update() {
+        frames++; 
+        doodleTime += CONFIG.doodleWobbleSpeed;
         AudioSys.update();
 
-        // 1. Clash Logic
+        // --- 1. GET READY PHASE (The Fix) ---
+        // If the game is starting, hover the bird and DO NOT move pipes yet.
+        if (startFreeze > 0) {
+            startFreeze--;
+            
+            // Make the bird bob gently in the middle
+            const targetY = canvas.height / 2 + Math.sin(frames * 0.1) * 20;
+            player.y += (targetY - player.y) * 0.1;
+            player.velocity = 0;
+            player.rotation = 0;
+
+            // Only move the pretty background stars/planets
+            for (let i = bgElements.length - 1; i >= 0; i--) {
+                let el = bgElements[i]; 
+                el.x -= CONFIG.gameSpeed * el.speedFactor;
+                if (el.x < -el.size * 2) bgElements.splice(i, 1);
+            }
+            if (frames % 120 === 0) createBgElement(canvas.width + 100);
+            
+            // STOP HERE! Don't run gravity or pipe logic yet.
+            return; 
+        }
+
+        // --- 2. CLASH LOGIC (When you hit a pipe) ---
         if (isClashing) {
             clashTimer--;
             const centerX = player.baseX; const centerY = player.baseY;
-            goose.x += (centerX - 50 - goose.x) * 0.1; goose.y += (centerY - goose.y) * 0.1;
+            
+            // Dramatic battle animation
+            goose.x += (centerX - 50 - goose.x) * 0.1; 
+            goose.y += (centerY - goose.y) * 0.1;
             player.x += (centerX + 50 - player.x) * 0.1;
+            
             const t = frames * 0.1;
-            goose.y = centerY + Math.sin(t) * 20; goose.x = centerX - 50 + Math.cos(t) * 10;
-            player.y = centerY + Math.sin(t + Math.PI) * 20; player.x = centerX + 50 + Math.cos(t + Math.PI) * 10;
+            goose.y = centerY + Math.sin(t) * 20; 
+            goose.x = centerX - 50 + Math.cos(t) * 10;
+            player.y = centerY + Math.sin(t + Math.PI) * 20; 
+            player.x = centerX + 50 + Math.cos(t + Math.PI) * 10;
             player.rotation = Math.sin(t) * 0.1;
             
             if (frames % 2 === 0) clashCloudParticles.push({ x: centerX+(Math.random()-0.5)*80, y: centerY+(Math.random()-0.5)*60, radius: 30, maxRadius: 90+Math.random()*40, growth: 1.0+Math.random()*0.5, alpha: 1.0, color: Math.random()>0.5?'#fff':'#f4f4f4', layer: Math.random()>0.95?1:0 });
@@ -1066,7 +1089,7 @@
             return;
         }
 
-        // 2. Secret Mode
+        // --- 3. SECRET MODE ---
         if (secretMode.active) {
             secretMode.timer--; CONFIG.gameSpeed = 8;
             if (frames % 10 === 0) { score++; document.getElementById('score-display').innerText = `Score: ${score}`; }
@@ -1082,7 +1105,7 @@
              if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) spawnBattery();
         }
 
-        // 3. Battery
+        // --- 4. BATTERY LOGIC ---
         if (battery.active) {
             battery.x -= CONFIG.gameSpeed; battery.wobble = Math.sin(frames * 0.1) * 5;
             if (player.x < battery.x + battery.width && player.x + player.width > battery.x && player.y < battery.y + battery.height && player.y + player.height > battery.y) {
@@ -1094,24 +1117,23 @@
             if (battery.x < -100) battery.active = false;
         }
 
-        // 4. Physics
-        if (startFreeze > 0) { startFreeze--; player.velocity = 0; } 
-        else { player.velocity += CONFIG.gravity; }
+        // --- 5. PLAYER PHYSICS ---
+        player.velocity += CONFIG.gravity;
         player.y += player.velocity;
         player.rotation = Math.min(Math.PI/4, Math.max(-Math.PI/4, player.velocity*0.1));
         
-        // Floor/Ceiling
         if (player.y + player.height > canvas.height || player.y < 0) {
             if (!secretMode.active) {
                 AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration; player.baseY = player.y;
             }
         }
 
-        // 5. Obstacles
+        // --- 6. OBSTACLES ---
         if (frames % CONFIG.spawnRate === 0) createObstacle();
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i];
             obs.x -= CONFIG.gameSpeed;
+            
             // Collision
             if (player.x+10 < obs.x+obs.width && player.x+player.width-10 > obs.x && 
                (player.y+10 < obs.topHeight || player.y+player.height-10 > obs.bottomY)) {
@@ -1119,6 +1141,7 @@
                     AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration; player.baseY = player.y;
                 }
             }
+            
             // Score
             if (obs.x + obs.width < player.x && !obs.passed) {
                 score++; obs.passed = true;
@@ -1129,7 +1152,7 @@
             if (obs.x < -100) obstacles.splice(i, 1);
         }
         
-        // 6. Coins
+        // --- 7. COINS & VISUALS ---
         for (let i = coins.length - 1; i >= 0; i--) {
             let c = coins[i]; c.x -= CONFIG.gameSpeed;
             let dx = (player.x+25)-c.x, dy = (player.y+25)-c.y;
@@ -1141,7 +1164,6 @@
             if (c.x < -50) coins.splice(i, 1);
         }
         
-        // 7. Visuals Update
         scoreFloater.forEach(f => { f.y+=f.vy; f.life--; if(f.life<=0) scoreFloater.shift(); });
         particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.life--; if(p.life<=0) particles.shift(); });
         goose.x += (goose.targetX - goose.x) * 0.05;
@@ -1264,6 +1286,7 @@
 </script>
 </body>
 </html>
+
 
 
 
