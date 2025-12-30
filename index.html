@@ -12,43 +12,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
 
    <style>
-        body {
+       /* 1. THE PAGE SETUP (The Flex Container) */
+        html, body {
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
-            /* New Landing Page Background (Darker outside the game) */
+            overflow: hidden; /* No scrollbars on the main page */
             background-color: #202020; 
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            touch-action: none; 
-            -webkit-user-select: none;
-            user-select: none;
+            
+            /* THIS CENTERS THE GAME */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            
+            touch-action: none; 
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* THE NEW "TV SCREEN" CONTAINER */
+        /* 2. THE GAME BOX (The Centerpiece) */
         #game-stage {
             position: relative;
             width: 960px;  /* Fixed Desktop Width */
-            height: 540px; /* Fixed Desktop Height (16:9) */
+            height: 540px; /* Fixed Desktop Height */
+            
+            /* Background & Border */
             background-color: #f0f0f0;
             background-image: 
                 linear-gradient(#e0e0e0 1px, transparent 1px),
                 linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
             background-size: 40px 40px;
-            overflow: hidden; /* Chops off anything outside the box */
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Nice shadow for pop */
-            border: 4px solid #333; /* The "Bezel" */
+            
+            border: 4px solid #333; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Nice shadow */
+            overflow: hidden; 
         }
 
-        /* On Mobile/Tablets, ignore the fixed size and go Full Screen */
+        /* 3. MOBILE OVERRIDE (Fills screen only on phones) */
         @media (max-width: 1024px) {
             #game-stage {
                 width: 100vw;
                 height: 100vh;
                 border: none;
-                border-radius: 0;
+                box-shadow: none;
             }
         }
 
@@ -172,6 +180,28 @@
             right: 20px;
             /* ... rest is same ... */
         }
+
+       /* --- ROTATE MESSAGE STYLES --- */
+        #rotate-message {
+            display: none !important; /* Hidden by default on Desktop/Laptop */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #202020; /* Dark background to match the page */
+            color: #fff;
+            z-index: 9999; /* Sit on top of EVERYTHING */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* SHOW ONLY ON MOBILE PORTRAIT */
+        @media only screen and (orientation: portrait) and (max-width: 768px) {
+            #rotate-message { display: flex !important; } /* Force show */
+            #game-stage { display: none !important; } /* Hide the game box */
+        }
+       
     </style>
 </head>
 <body>
@@ -1366,6 +1396,7 @@
 </script>
 </body>
 </html>
+
 
 
 
