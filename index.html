@@ -1066,106 +1066,114 @@
     }
 
    function draw() {
-        // 1. CLEAR
+        // --- SECTION 1: CLEAR & BACKGROUNDS ---
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 2. BACKGROUNDS
+        // Draw the correct paper or blueprint background
         if (secretMode.active) drawBlueprintBackground(); else drawPaperBackground();
+        
+        // Draw space doodles (planets, stars)
         bgElements.forEach(el => drawSpaceDoodle(el));
+        
+        // Draw clouds (transparency changes if in secret mode)
         drawClouds(frames, secretMode.active);
         
+        
+        // --- SECTION 2: OBSTACLES ---
         const colors = ["#ffcc80", "#a5d6a7", "#90caf9"]; 
         const strokes = ["#e65100", "#1b5e20", "#0d47a1"]; 
 
-        // 3. OBSTACLES
         obstacles.forEach(obs => {
             if (secretMode.active) {
+                // Blueprint style obstacles
                 ctx.save(); ctx.globalAlpha = 0.3;
                 drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, "#4fc3f7", "#fff");
                 drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, "#4fc3f7", "#fff");
                 ctx.restore();
             } else {
+                // Normal colored obstacles
                 drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, colors[obs.colorIndex], strokes[obs.colorIndex]);
                 drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, colors[obs.colorIndex], strokes[obs.colorIndex]);
             }
         });
 
-        // 4. ITEMS
+
+        // --- SECTION 3: COLLECTIBLES ---
+        // Battery
         if (battery.active) drawBattery(battery.x, battery.y + battery.wobble, frames);
-        coins.forEach(c => drawCoin(c, frames));
         
-        // 5. CLASH CLOUDS (Back)
+        // Coins
+        coins.forEach(c => drawCoin(c, frames));
+
+
+        // --- SECTION 4: BEHIND EFFECTS ---
+        // Draw the dust cloud BEHIND the player if crashing
         if (isClashing) drawClashClouds(0, clashCloudParticles);
 
-        // 6. PLAYER DRAWING
+
+        // --- SECTION 5: PLAYER RENDERING (CRITICAL FIX IS HERE) ---
         if (secretMode.active) {
              ctx.save();
-             // Draw Secret Image (With Safety Checks)
-             try {
-                 const jitterX = (Math.random()-0.5)*15; 
-                 const jitterY = (Math.random()-0.5)*15;
-                 let drawH = canvas.height * 0.85; 
-                 let drawW = 300; 
-                 
-                // --- FIX START ---
-             // We use 'naturalHeight' to ensure we don't divide by zero.
+             const jitterX = (Math.random()-0.5)*15; 
+             const jitterY = (Math.random()-0.5)*15;
+             let drawH = canvas.height * 0.85; 
+             let drawW = 300; 
+             
+             // --- THE FIX: SAFETY CHECK ---
              if (secretPlayerImg.complete && secretPlayerImg.naturalHeight > 0) {
-                 // Calculate correct aspect ratio
                  drawW = drawH * (secretPlayerImg.naturalWidth / secretPlayerImg.naturalHeight);
                  
                  ctx.shadowBlur = 40 + Math.random() * 40; 
                  ctx.shadowColor = "#00ffff"; 
-                 
-                 // Draw the image safely
                  ctx.drawImage(secretPlayerImg, -drawW*0.1+jitterX, (canvas.height-drawH)/2+jitterY, drawW, drawH);
              } else { 
-                 // Fallback: If image is missing/loading, draw a blue bar so the game works
+                 // Fallback so it never freezes
                  ctx.fillStyle = "rgba(41, 182, 246, 0.5)"; 
                  ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height); 
              }
-             // --- FIX END ---
              
-             // Lightning
+             // Draw lightning
              if (frames % 8 < 4) { 
                  drawLightning(canvas.width*0.1, canvas.height*0.5); 
                  drawLightning(canvas.width*0.2, canvas.height*0.2); 
              }
              ctx.restore();
              
-             // Draw the Goose on top
+             // Draw the Goose
              drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
              
         } else {
-             // Normal Mode Player
+             // Normal Mode
              drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
+             
              ctx.save(); 
              ctx.translate(player.x+player.width/2, player.y+player.height/2); 
              ctx.rotate(player.rotation);
              
+             // Draw Player Sprite (Rev)
              if (playerImg.complete && playerImg.naturalWidth > 0) {
                  const aspect = playerImg.naturalWidth / playerImg.naturalHeight || 1; 
                  const drawW = player.width * 1.5; 
                  const drawH = drawW / aspect;
                  ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
              } else { 
+                 // Fallback Box
                  ctx.fillStyle = "#29b6f6"; ctx.fillRect(-20, -20, 40, 40); 
                  ctx.strokeStyle="black"; ctx.strokeRect(-20,-20,40,40); 
              }
              ctx.restore();
         }
 
-        // 7. OVERLAYS
+
+        // --- SECTION 6: FRONT EFFECTS ---
+        // Draw the dust cloud IN FRONT of the player
         if (isClashing) drawClashClouds(1, clashCloudParticles);
-        particles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2); ctx.fill(); });
-        scoreFloater.forEach(f => drawFloater(f));
         
-        if (secretMode.active) { 
-            ctx.font = "bold 40px 'Comic Sans MS'"; 
-            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`; 
-            ctx.textAlign = "center"; 
-            ctx.fillText("SUPERCHARGE!", canvas.width/2, 100); 
-        }
-    }
+        // Draw Sparks/Particles
+        particles.forEach(p => { 
+            ctx.fillStyle = p.color; 
+            ctx.beginPath(); 
+            ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2);
 
    function loop() {
         if (!isPaused) {
@@ -1233,6 +1241,7 @@
 
 </script>
 </html>
+
 
 
 
