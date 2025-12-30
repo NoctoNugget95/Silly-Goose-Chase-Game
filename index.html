@@ -108,10 +108,11 @@
     #start-rev-img {
             position: absolute;
             
-            /* RESET: Put him exactly against the right wall */
-            right: 0; 
+            /* THE FIX: Pull him 10% past the edge to hide the gap */
+            /* If he is still too far left, change this to -15% or -20% */
+            right: -10%; 
             
-            /* Height & Anchor */
+            /* Height & Floor Anchor */
             bottom: -2vh; 
             height: 85vh; 
             
@@ -125,7 +126,8 @@
             pointer-events: none;
             z-index: 1; 
             
-            /* DELETED: transform: scaleX(-1); <-- No longer needed! */
+            /* DOUBLE CHECK: Make sure this transform line is DELETED */
+            /* transform: scaleX(-1); */ 
         }
         
         #start-goose-img {
@@ -1386,6 +1388,7 @@
 </script>
 </body>
 </html>
+
 
 
 
