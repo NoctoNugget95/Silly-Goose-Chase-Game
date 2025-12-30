@@ -1211,15 +1211,18 @@ function draw() {
         }
 
 
-        // --- SECTION 6: FRONT EFFECTS ---
+       // --- SECTION 6: FRONT EFFECTS ---
         // Draw the dust cloud IN FRONT of the player
         if (isClashing) drawClashClouds(1, clashCloudParticles);
         
-        // Draw Sparks/Particles
+        // Draw Sparks/Particles (CRASH FIX)
         particles.forEach(p => { 
             ctx.fillStyle = p.color; 
             ctx.beginPath(); 
-            ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2); 
+            // FIX: Ensure radius is never negative using Math.max(0, ...)
+            // This prevents the "IndexSizeError" that was killing Secret Mode
+            let radius = Math.max(0, p.life / 5);
+            ctx.arc(p.x, p.y, radius, 0, Math.PI*2); 
             ctx.fill(); 
         });
 
@@ -1308,6 +1311,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
