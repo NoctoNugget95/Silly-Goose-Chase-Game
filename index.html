@@ -1065,9 +1065,11 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
-    function draw() {
+   function draw() {
+        // 1. CLEAR
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // 2. BACKGROUNDS
         if (secretMode.active) drawBlueprintBackground(); else drawPaperBackground();
         bgElements.forEach(el => drawSpaceDoodle(el));
         drawClouds(frames, secretMode.active);
@@ -1075,6 +1077,7 @@
         const colors = ["#ffcc80", "#a5d6a7", "#90caf9"]; 
         const strokes = ["#e65100", "#1b5e20", "#0d47a1"]; 
 
+        // 3. OBSTACLES
         obstacles.forEach(obs => {
             if (secretMode.active) {
                 ctx.save(); ctx.globalAlpha = 0.3;
@@ -1087,39 +1090,80 @@
             }
         });
 
+        // 4. ITEMS
         if (battery.active) drawBattery(battery.x, battery.y + battery.wobble, frames);
         coins.forEach(c => drawCoin(c, frames));
         
+        // 5. CLASH CLOUDS (Back)
         if (isClashing) drawClashClouds(0, clashCloudParticles);
 
+        // 6. PLAYER DRAWING
         if (secretMode.active) {
              ctx.save();
-             const jitterX = (Math.random()-0.5)*15; const jitterY = (Math.random()-0.5)*15;
-             let drawH = canvas.height*0.85; let drawW = 300; 
-             if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) drawW = drawH * (secretPlayerImg.width/secretPlayerImg.height);
+             // Draw Secret Image (With Safety Checks)
+             try {
+                 const jitterX = (Math.random()-0.5)*15; 
+                 const jitterY = (Math.random()-0.5)*15;
+                 let drawH = canvas.height * 0.85; 
+                 let drawW = 300; 
+                 
+                 // FIX: Only calculate ratio if naturalHeight is valid to avoid Divide-By-Zero crash
+                 if (secretPlayerImg.complete && secretPlayerImg.naturalHeight > 0) {
+                     drawW = drawH * (secretPlayerImg.naturalWidth / secretPlayerImg.naturalHeight);
+                     ctx.shadowBlur = 40+Math.random()*40; 
+                     ctx.shadowColor = "#00ffff"; 
+                     ctx.drawImage(secretPlayerImg, -drawW*0.1+jitterX, (canvas.height-drawH)/2+jitterY, drawW, drawH);
+                 } else {
+                     // Fallback Blue Box
+                     ctx.fillStyle = "#29b6f6"; 
+                     ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height); 
+                 }
+             } catch(e) {
+                 // If image fails, draw fallback and keep going (Don't Freeze!)
+                 console.warn("Image draw error", e);
+                 ctx.fillStyle = "#29b6f6"; ctx.fillRect(0,0,100,canvas.height);
+             }
              
-             if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) {
-                 ctx.shadowBlur = 40+Math.random()*40; ctx.shadowColor = "#00ffff"; 
-                 ctx.drawImage(secretPlayerImg, -drawW*0.1+jitterX, (canvas.height-drawH)/2+jitterY, drawW, drawH);
-             } else { ctx.fillStyle = "#29b6f6"; ctx.fillRect(0,0,canvas.width*0.15,canvas.height); }
-             
-             if (frames % 8 < 4) { drawLightning(canvas.width*0.1, canvas.height*0.5); drawLightning(canvas.width*0.2, canvas.height*0.2); }
+             // Lightning
+             if (frames % 8 < 4) { 
+                 drawLightning(canvas.width*0.1, canvas.height*0.5); 
+                 drawLightning(canvas.width*0.2, canvas.height*0.2); 
+             }
              ctx.restore();
+             
+             // Draw the Goose on top
              drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
+             
         } else {
+             // Normal Mode Player
              drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
-             ctx.save(); ctx.translate(player.x+player.width/2, player.y+player.height/2); ctx.rotate(player.rotation);
+             ctx.save(); 
+             ctx.translate(player.x+player.width/2, player.y+player.height/2); 
+             ctx.rotate(player.rotation);
+             
              if (playerImg.complete && playerImg.naturalWidth > 0) {
-                 const aspect = playerImg.width / playerImg.height; const drawW = player.width*1.5; const drawH = drawW/aspect;
+                 const aspect = playerImg.naturalWidth / playerImg.naturalHeight || 1; 
+                 const drawW = player.width * 1.5; 
+                 const drawH = drawW / aspect;
                  ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
-             } else { ctx.fillStyle = "#29b6f6"; ctx.fillRect(-20, -20, 40, 40); ctx.strokeStyle="black"; ctx.strokeRect(-20,-20,40,40); }
+             } else { 
+                 ctx.fillStyle = "#29b6f6"; ctx.fillRect(-20, -20, 40, 40); 
+                 ctx.strokeStyle="black"; ctx.strokeRect(-20,-20,40,40); 
+             }
              ctx.restore();
         }
 
+        // 7. OVERLAYS
         if (isClashing) drawClashClouds(1, clashCloudParticles);
         particles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2); ctx.fill(); });
         scoreFloater.forEach(f => drawFloater(f));
-        if (secretMode.active) { ctx.font = "bold 40px 'Comic Sans MS'"; ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`; ctx.textAlign = "center"; ctx.fillText("SUPERCHARGE!", canvas.width/2, 100); }
+        
+        if (secretMode.active) { 
+            ctx.font = "bold 40px 'Comic Sans MS'"; 
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`; 
+            ctx.textAlign = "center"; 
+            ctx.fillText("SUPERCHARGE!", canvas.width/2, 100); 
+        }
     }
 
     function loop() {
@@ -1170,6 +1214,7 @@
 
 </script>
 </html>
+
 
 
 
