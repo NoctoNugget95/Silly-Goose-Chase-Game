@@ -1125,10 +1125,11 @@
         }
     }
 
-    function update() {
+   function update() {
         frames++;
         doodleTime += CONFIG.doodleWobbleSpeed;
         
+        // 1. Background Elements
         for (let i = bgElements.length - 1; i >= 0; i--) {
             let el = bgElements[i];
             el.x -= CONFIG.gameSpeed * el.speedFactor;
@@ -1140,6 +1141,7 @@
 
         AudioSys.update();
 
+        // 2. Clash Logic
         if (isClashing) { 
             clashTimer--;
             
@@ -1186,15 +1188,15 @@
                 isClashing = false;
                 document.getElementById('final-score').innerText = score;
                 
-                // NEW: Show Game Over screen using the class
                 const endScreen = document.getElementById('game-over-screen');
-                endScreen.classList.add('active'); // Add class to show it
+                endScreen.classList.add('active'); 
                 endScreen.classList.add('spin-in');
             }
             return; 
         }
 
-       if (secretMode.active) {
+        // 3. Secret Mode Logic (With Coin Cleanup)
+        if (secretMode.active) {
             secretMode.timer--;
             CONFIG.gameSpeed = 8; 
             if (frames % 10 === 0) {
@@ -1202,7 +1204,7 @@
                 document.getElementById('score-display').innerText = `Score: ${score}`;
             }
             
-            // --- TIMER ENDS ---
+            // TIMER ENDS
             if (secretMode.timer <= 0) {
                 secretMode.active = false;
                 AudioSys.tempo = 1.45; 
@@ -1210,25 +1212,25 @@
                 createParticle(player.x, player.y, 'jump');
                 player.x = canvas.width * 0.30;
                 
-                // CLEANUP: Wipe everything so the screen is clean for normal mode
+                // CLEANUP: Wipe obstacles AND coins
                 obstacles = obstacles.filter(obs => obs.x > canvas.width * 0.8);
-                coins = []; // <--- THIS IS THE FIX (Removes all floating coins instantly)
+                coins = []; 
                 
                 CONFIG.gameSpeed = 3.2;
             }
 
-            // --- COIN EXPLOSION ---
-            // Spawns a coin every 20 frames (Very fast!)
+            // COIN EXPLOSION (Every 20 frames)
             if (frames % 20 === 0) {
                  createCoin(canvas.width + 100, Math.random() * canvas.height);
             }
-        
-            else {
-            if (score >= 25 && Math.random() < CONFIG.batterySpawnChance) {
+        } else {
+            // Normal Mode Battery Spawn
+            if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) {
                 spawnBattery();
             }
         }
 
+        // 4. Battery Movement
         if (battery.active) {
             battery.x -= CONFIG.gameSpeed;
             battery.wobble = Math.sin(frames * 0.1) * 5;
@@ -1250,21 +1252,18 @@
             if (battery.x < -100) battery.active = false;
         }
 
-       // --- NEW GRAVITY LOGIC ---
-        // If we are in the "Start Freeze" period, hover in place.
+        // 5. Player Physics (With Start Freeze)
         if (startFreeze > 0) {
             startFreeze--; 
-            player.velocity = 0; // Stop falling
+            player.velocity = 0; // Hover
         } else {
-            // Normal Gravity
-            player.velocity += CONFIG.gravity;
+            player.velocity += CONFIG.gravity; // Fall
         }
         
         player.y += player.velocity;
-        // -------------------------
-
         player.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (player.velocity * 0.1)));
 
+        // Floor / Ceiling Collision
         if (player.y + player.height > canvas.height || player.y < 0) {
             if (!secretMode.active) {
                 AudioSys.playTrack('clash');
@@ -1275,12 +1274,16 @@
             }
         }
 
+        // 6. Obstacle Spawning
         if (frames % CONFIG.spawnRate === 0) createObstacle();
 
+        // 7. Obstacle Logic
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i];
             obs.x -= CONFIG.gameSpeed;
             const padding = 10; 
+            
+            // Collision
             if (
                 player.x + padding < obs.x + obs.width &&
                 player.x + player.width - padding > obs.x &&
@@ -1295,16 +1298,15 @@
                 }
             }
 
-           if (obs.x + obs.width < player.x && !obs.passed) {
+            // Scoring (With Arcade Ding)
+            if (obs.x + obs.width < player.x && !obs.passed) {
                 score++;
                 obs.passed = true;
                 
-                // --- NEW: Arcade Ding Sound ---
-                // 1200Hz (High Pitch), 0.1s (Short), Sine Wave (Clean Bell sound)
+                // ARCADE DING
                 if (typeof AudioSys !== 'undefined') {
                     AudioSys.playTone(1200, 0.1, 'sine', 0.6);
                 }
-                // ------------------------------
                 
                 document.getElementById('score-display').innerText = `Score: ${score}`;
                 if (!secretMode.active && score % 5 === 0) CONFIG.gameSpeed += 0.2;
@@ -1312,6 +1314,7 @@
             if (obs.x + obs.width < -100) obstacles.splice(i, 1);
         }
 
+        // 8. Coin Logic
         for (let i = coins.length - 1; i >= 0; i--) {
             let c = coins[i];
             c.x -= CONFIG.gameSpeed;
@@ -1341,6 +1344,7 @@
             if (c.x < -50) coins.splice(i, 1);
         }
 
+        // 9. Floating Text & Particles
         for (let i = scoreFloater.length - 1; i >= 0; i--) {
             let f = scoreFloater[i];
             f.y += f.vy;
@@ -1354,17 +1358,18 @@
             if (p.life <= 0) particles.splice(i, 1);
         }
 
+        // 10. Goose Follow Logic
         goose.x += (goose.targetX - goose.x) * 0.05;
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
  function startGame() {
-        // 1. STOP DOUBLE CLICKS: If the game is already running, do nothing.
-        if (isPlaying || isClashing) return;
-     
+        // 1. STOP DOUBLE CLICKS: If game is running, ignore clicks
+        if (isPlaying || isClashing) return; 
+
         console.log("Start Button Clicked!"); 
 
-        // 1. Audio Wake-up
+        // 2. Audio Wake-up
         if (typeof AudioSys !== 'undefined') {
             AudioSys.init();
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
@@ -1374,27 +1379,25 @@
             AudioSys.tempo = 1.45;
         }
 
-        // 2. FORCE HIDE THE UI
+        // 3. UI Hiding
         const startScreen = document.getElementById('start-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const mainTitle = document.getElementById('main-title');
         
-        // Hide Start Screen
         if (startScreen) {
             startScreen.classList.remove('active');
             startScreen.style.display = 'none'; 
         }
         
-        // Hide Game Over Screen (THE FIX IS HERE)
         if (gameOverScreen) {
             gameOverScreen.classList.remove('active');
-            gameOverScreen.classList.remove('spin-in'); // <--- THIS WAS MISSING!
+            gameOverScreen.classList.remove('spin-in'); 
             gameOverScreen.style.display = 'none';
         }
         
         if (mainTitle) mainTitle.classList.add('hidden');
         
-        // 3. Hide Characters
+        // Hide Start Characters
         const revImg = document.getElementById('start-rev-img');
         const gooseImg = document.getElementById('start-goose-img');
         if(revImg) revImg.style.display = 'none';
@@ -1427,9 +1430,11 @@
         secretMode.active = false;
         secretMode.timer = 0;
         battery.active = false;
-        startFreeze = 60;   // Freeze for 60 frames (1 second)
-        createObstacle();   // Spawn the first pipe IMMEDIATELY (No waiting!)
-        // --------------------------
+        
+        // 5. START FREEZE & IMMEDIATE OBSTACLE
+        startFreeze = 60;   
+        createObstacle();   
+        
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
         isGameOver = false;
@@ -1478,6 +1483,7 @@
 </script>
 </body>
 </html>
+
 
 
 
