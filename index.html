@@ -11,37 +11,68 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
 
-    <style>
-        body {
+   <style>
+       /* 1. THE PAGE SETUP (The Flex Container) */
+        html, body {
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-           /* New Background: A subtle blueprint/grid style */
-            background-color: #f0f0f0;
-            background-image: 
-                linear-gradient(#e0e0e0 1px, transparent 1px),
-                linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
-            background-size: 40px 40px;
+            overflow: hidden; /* No scrollbars on the main page */
+            background-color: #202020; 
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            
+            /* THIS CENTERS THE GAME */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
             touch-action: none; 
             -webkit-user-select: none;
             user-select: none;
         }
 
+        /* 2. THE GAME BOX (The Centerpiece) */
+        #game-stage {
+            position: relative;
+            width: 1280px;  /* Fixed Desktop Width */
+            height: 720px; /* Fixed Desktop Height */
+            /* Safety: Ensure it never overflows small screens */
+            max-width: 100vw;
+            max-height: 100vh;
+            /* -------------------------------- */
+            
+            /* Background & Border */
+            background-color: #f0f0f0;
+            background-image: 
+                linear-gradient(#e0e0e0 1px, transparent 1px),
+                linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 40px 40px;
+            
+            border: 4px solid #333; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Nice shadow */
+            overflow: hidden; 
+        }
+
+        /* 3. MOBILE OVERRIDE (Fills screen only on phones) */
+        @media (max-width: 1024px) {
+            #game-stage {
+                width: 100vw;
+                height: 100vh;
+                border: none;
+                box-shadow: none;
+            }
+        }
+
         #gameCanvas {
             display: block;
             width: 100%;
-            height: 100vh;
-            position: relative;
-            z-index: 0;
+            height: 100%;
         }
 
         #ui-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -53,13 +84,13 @@
         /* Main Title Styling */
         #main-title {
             position: absolute;
-            top: 10%;
+            top: 6%; /* Moved down slightly */
             width: 100%;
             text-align: center;
             font-family: 'Barriecito', cursive;
-            font-size: 4rem; 
+            font-size: 5rem; /* Bigger title */
             color: #d32f2f;
-            text-shadow: 3px 3px 0px #000;
+            text-shadow: 4px 4px 0px #000;
             margin: 0;
             z-index: 30;
             pointer-events: none;
@@ -68,232 +99,114 @@
         
         .hidden { display: none !important; }
 
-     .message-box {
-            /* 1. Hide by default */
+        /* BIGGER START BOX */
+        .message-box {
             display: none; 
-            
-            /* 2. CRITICAL FIX: Allow clicking on this box! */
             pointer-events: auto; 
-            
-            /* 3. Flex Layout */
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
             
-            /* 4. Visuals */
             background: #ffffff;
-            border: 8px solid #000;
-            border-radius: 25px;
-            padding: 40px;
+            border: 6px solid #000;
+            border-radius: 30px;
+            padding: 40px; /* More breathing room */
             text-align: center;
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
             
-            /* 5. Sizing & Position */
-            min-width: 300px;
-            max-width: 500px;
-            position: relative; 
-            margin: auto; 
-            z-index: 20;
+            /* Bigger Dimensions */
+            min-width: 300px; 
             
-            font-size: 1.5rem;
+            font-size: 2rem; /* Bigger Text */
             font-family: 'Barriecito', cursive;
+            z-index: 20;
+            margin-top: 50px; /* Push it down a bit so it doesn't hit title */
         }
         
-        /* NEW RULE: Use this to show the box */
-        .message-box.active {
-            display: flex !important;
+        .message-box.active { display: flex !important; }
+
+        /* BUTTON STYLING */
+        button {
+            background: #ffeb3b;
+            border: 4px solid #000;
+            padding: 15px 40px; /* Bigger button */
+            font-size: 1.8rem; /* Bigger text */
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: transform 0.1s;
         }
-        
-    #start-rev-img {
+        button:active { transform: scale(0.95); }
+
+        /* CHARACTER POSITIONING (Fixed to the Box) */
+        #start-rev-img {
             position: absolute;
-            
-            /* THE FIX: Pull him 10% past the edge to hide the gap */
-            /* If he is still too far left, change this to -15% or -20% */
-            right: -13%; 
-            
-            /* Height & Floor Anchor */
-            bottom: -14vh; 
-            height: 85vh; 
-            
-            /* Size handling */
-        height: auto;
-        max-height: none;
+            right: -10%; /* Tucked into the corner */
+            bottom: -15%;
+            height: 90%; /* Scale relative to the box height */
             width: auto;
-            max-width: none; 
-            scale: 1.08;
+            scale: 1.1;
             object-fit: contain;
-            object-position: bottom right; 
-            
             pointer-events: none;
             z-index: 1; 
-            
-            /* DOUBLE CHECK: Make sure this transform line is DELETED */
-            /* transform: scaleX(-1); */ 
         }
         
         #start-goose-img {
             position: absolute;
-            left: 0;
-            right: 1;
-            /* Sink it slightly */
-            bottom: 5vh;
-            
-            /* Make it a bit bigger */
-            height: 55vh; 
+            left: -5%;
+            bottom: 0%;
+            height: 60%; 
             width: auto;
-            max-width: none;
-            scale: 1.3;
             object-fit: contain;
-            object-position: bottom left; 
-            
             pointer-events: none;
             z-index: 1; 
         }
+
+        /* ... Keep your existing @keyframes spinIn, #loading, etc. ... */
         
-        .spin-in {
-            display: block !important;
-            animation: spinIn 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        /* Secret Level Override */
+        #game-stage.blueprint-mode {
+            background-color: #0d47a1;
         }
-
-        @keyframes spinIn {
-            0% { transform: scale(0) rotate(-1080deg); opacity: 0; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        h1 {
-            margin: 0 0 10px 0;
-            color: #d32f2f;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 2rem;
-            text-shadow: 2px 2px 0px #000;
-        }
-        p {
-            font-size: 1.1rem;
-            color: #333;
-            margin-bottom: 15px;
-        }
-        button {
-            background: #ffeb3b;
-            border: 3px solid #000;
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: transform 0.1s;
-            margin: 5px;
-        }
-        button:active {
-            transform: scale(0.95);
+        
+        /* ... Keep existing Audio Controls & Rotate Message ... */
+        /* Make sure Audio controls are inside #ui-layer or absolute to #game-stage */
+        #audio-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            /* ... rest is same ... */
         }
         
         #score-display {
             position: absolute;
             top: 20px;
             right: 20px;
-            font-size: 2rem;
-            color: #333;
-            font-weight: bold;
-            pointer-events: none;
-            text-shadow: 2px 2px 0px #fff;
-            transition: color 0.5s;
-        }
-        #loading {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            z-index: 1000;
-            flex-direction: column;
-            padding: 20px;
-            text-align: center;
-        }
-        #loading.error {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-        
-        /* Secret Level Styles */
-        body.blueprint-mode {
-            background-color: #0d47a1; /* Dark Blue */
-        }
-        body.blueprint-mode #score-display {
-            color: #fff;
-            text-shadow: 0 0 10px #4fc3f7;
-        }
-        
-        /* Audio Controls */
-        #audio-controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            height: 40px;
-            background: rgba(255,255,255,0.8);
-            border: 2px solid #333;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            pointer-events: auto;
-            z-index: 100;
-            transition: width 0.3s ease;
-            width: 40px; /* Collapsed width */
-            overflow: hidden;
-        }
-        
-        #audio-controls:hover {
-            width: 160px; /* Expanded width to show slider */
+            /* ... rest is same ... */
         }
 
-        #mute-btn {
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-            user-select: none;
-        }
-
-        #volume-slider {
-            width: 100px;
-            margin-left: 5px;
-            margin-right: 10px;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-        }
-
-        #audio-controls:hover #volume-slider {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Rotate Message */
+       /* --- ROTATE MESSAGE STYLES --- */
         #rotate-message {
-            display: none;
+            display: none !important; /* Hidden by default on Desktop/Laptop */
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #222;
+            background: #202020; /* Dark background to match the page */
             color: #fff;
-            z-index: 9999;
+            z-index: 9999; /* Sit on top of EVERYTHING */
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 20px;
         }
+
+        /* SHOW ONLY ON MOBILE PORTRAIT */
         @media only screen and (orientation: portrait) and (max-width: 768px) {
-            #rotate-message { display: flex; }
-            #ui-layer { display: none; }
+            #rotate-message { display: flex !important; } /* Force show */
+            #game-stage { display: none !important; } /* Hide the game box */
         }
+       
     </style>
 </head>
 <body>
@@ -304,38 +217,36 @@
     <p>This game is best played in Landscape mode!</p>
 </div>
 
-<canvas id="gameCanvas"></canvas>
+<div id="game-stage">
 
-<div id="score-display">Score: 0</div>
+    <canvas id="gameCanvas"></canvas>
 
-<div id="audio-controls">
-    <div id="mute-btn">🔊</div>
-    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5">
-</div>
+    <div id="score-display">Score: 0</div>
 
-<div id="ui-layer">
-    <!-- Main Title -->
-    <h1 id="main-title">Silly Goose Chase</h1>
+    <div id="audio-controls">
+        <div id="mute-btn">🔊</div>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5">
+    </div>
 
-    <!-- Start Screen UI -->
-    <div id="start-screen" class="message-box active">
-        <p id="instruction-text">Tap repeatedly to fly!</p>
-        <button id="start-btn" onclick="startGame()">Start Flying</button>
+    <div id="ui-layer">
+        <h1 id="main-title">Silly Goose Chase</h1>
+
+        <div id="start-screen" class="message-box active">
+            <p id="instruction-text">Tap repeatedly to fly!</p>
+            <button id="start-btn" onclick="startGame()">Start Flying</button>
+        </div>
+        
+        <img id="start-rev-img" alt="Rev">
+        <img id="start-goose-img" alt="Goose">
+        
+        <div id="game-over-screen" class="message-box">
+            <h1>Silly Goose!</h1>
+            <p>Your Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">Try Again</button>
+        </div>
     </div>
     
-    <!-- START SCREEN IMAGES (Static Config) -->
-    <!-- These images are independent of the canvas game loop -->
-    <img id="start-rev-img" alt="Rev">
-    <img id="start-goose-img" alt="Goose">
-    
-    <div id="game-over-screen" class="message-box">
-        <h1>Silly Goose!</h1>
-        <p>Your Score: <span id="final-score">0</span></p>
-        <button id="restart-btn">Try Again</button>
-    </div>
-</div>
-
-<div id="loading">Loading...</div>
+    <div id="loading">Loading...</div>
 
 <!-- FAILSAFE SCRIPT -->
 <script>
@@ -1006,8 +917,14 @@
 
     // --- MAIN ---
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        // 1. Get the container element
+        const stage = document.getElementById('game-stage');
+        
+        // 2. Set canvas to match the container's size, not the window
+        canvas.width = stage.clientWidth;
+        canvas.height = stage.clientHeight;
+        
+        // 3. Reset player position if game hasn't started
         if (!isPlaying && !isClashing && player) {
             player.baseX = canvas.width * 0.30;
             player.x = player.baseX;
@@ -1208,7 +1125,7 @@
             if (secretMode.timer <= 0) {
                 secretMode.active = false;
                 AudioSys.tempo = 1.45; 
-                document.body.classList.remove('blueprint-mode');
+                document.getElementById('game-stage').classList.remove('blueprint-mode');
                 createParticle(player.x, player.y, 'jump');
                 player.x = canvas.width * 0.30;
                 
@@ -1245,7 +1162,7 @@
                 battery.active = false; 
                 AudioSys.playSound('powerup');
                 AudioSys.tempo = 1.6; 
-                document.body.classList.add('blueprint-mode');
+                document.getElementById('game-stage').classList.add('blueprint-mode');
                 player.x = canvas.width * 0.6;
                 for(let i=0; i<30; i++) createParticle(player.x + 25, player.y + 25, 'spark');
             }
@@ -1404,7 +1321,7 @@
         if(revImg) revImg.style.display = 'none';
         if(gooseImg) gooseImg.style.display = 'none';
         
-        document.body.classList.remove('blueprint-mode');
+       document.getElementById('game-stage').classList.remove('blueprint-mode');
         
         // 4. Reset Game State
         player.baseX = canvas.width * 0.30;
@@ -1484,6 +1401,14 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
