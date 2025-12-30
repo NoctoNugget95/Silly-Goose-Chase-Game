@@ -1317,15 +1317,19 @@
         const gameOverScreen = document.getElementById('game-over-screen');
         const mainTitle = document.getElementById('main-title');
         
-        // Remove class AND force style to none
+        // Hide Start Screen
         if (startScreen) {
             startScreen.classList.remove('active');
             startScreen.style.display = 'none'; 
         }
+        
+        // Hide Game Over Screen (THE FIX IS HERE)
         if (gameOverScreen) {
             gameOverScreen.classList.remove('active');
+            gameOverScreen.classList.remove('spin-in'); // <--- THIS WAS MISSING!
             gameOverScreen.style.display = 'none';
         }
+        
         if (mainTitle) mainTitle.classList.add('hidden');
         
         // 3. Hide Characters
@@ -1410,6 +1414,7 @@
 </script>
 </body>
 </html>
+
 
 
 
