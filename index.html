@@ -338,8 +338,8 @@
         </div>
         <div id="pause-overlay">
             <h1 class="pause-title">PAUSED</h1>
-            <p class="pause-subtitle desktop-hint">Click anywhere / Press Spacebar to resume</p>
-            <p class="pause-subtitle mobile-hint">Tap anywhere to resume</p>
+            <p class="pause-subtitle desktop-hint">Click Anywhere or Press Spacebar to Resume</p>
+            <p class="pause-subtitle mobile-hint">Tap Anywhere to Resume</p>
         </div>
     </div>
     
@@ -1534,6 +1534,36 @@
    window.onload = function() {
         resize(); // Ensure canvas is ready
         document.getElementById('loading').style.display = 'none';
+
+       // --- NEW: AUDIO CONTROLS LOGIC ---
+        const volSlider = document.getElementById('volume-slider');
+        const muteBtn = document.getElementById('mute-btn');
+        
+        // 1. Volume Slider
+        if(volSlider) {
+            volSlider.addEventListener('input', (e) => {
+                // Prevent the game from jumping when dragging slider
+                e.stopPropagation(); 
+                if(AudioSys) AudioSys.setVolume(e.target.value);
+            });
+            // Stop mouse clicks on the slider from pausing the game
+            volSlider.addEventListener('mousedown', (e) => e.stopPropagation());
+            volSlider.addEventListener('click', (e) => e.stopPropagation());
+        }
+
+        // 2. Mute Button
+        if(muteBtn) {
+            muteBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't pause/jump when muting
+                if(AudioSys) {
+                    AudioSys.toggleMute();
+                    // Update the icon
+                    muteBtn.innerText = AudioSys.isMuted ? '🔇' : '🔊';
+                }
+            });
+            muteBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+        // ---------------------------------
         
         // Start screen music listener
         window.addEventListener('click', function musicStarter() {
@@ -1551,6 +1581,7 @@
 </script>
 </body>
 </html>
+
 
 
 
