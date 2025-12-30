@@ -461,8 +461,9 @@
     }
 
     // --- FUNCTION 2: Save Score ---
+    // --- FUNCTION 2: Save Score (Silent Mode) ---
     function trySaveScore(newScore) {
-        // Always update local high score if beaten
+        // 1. Always update LOCAL High Score immediately
         if (newScore > highScore) {
             highScore = newScore;
             localStorage.setItem('sillyGooseHighScore', highScore);
@@ -470,23 +471,39 @@
 
         if (!db) return;
 
-        // Save to cloud if it beats local best OR just to be safe
+        // 2. Database Logic
+        // Only bother the database if we actually have a new high score
         if (newScore >= highScore) {
+            
+            // CHECK: Are you still "Guest"?
             if (currentUser === "Guest") {
-                const name = prompt("New High Score! Enter name:");
-                if (name) {
+                // If Guest, we MUST ask for a name to save to the leaderboard
+                const name = prompt("You made the Leaderboard! Enter a name to save it:");
+                
+                if (name && name.trim().length > 0) {
+                    // Update the global variable AND local storage immediately
                     currentUser = name.trim();
                     localStorage.setItem('sillyGooseUsername', currentUser);
                     updateUserDisplay();
+                } else {
+                    // If they hit cancel, stop here. Don't save as "Guest".
+                    return; 
                 }
             }
 
+            // 3. SILENT SAVE
+            // If we are here, we have a username (e.g. "Nocto").
+            // Save to the cloud automatically without a popup.
             db.collection("leaderboard").doc(currentUser).set({
                 name: currentUser,
                 score: newScore,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             })
-            .then(() => console.log("Score saved to leaderboard!"))
+            .then(() => {
+                console.log("Score saved silently for " + currentUser);
+                // Optional: Force a refresh of the board so you see it instantly
+                fetchLeaderboard(); 
+            })
             .catch((err) => console.error("Save failed", err));
         }
     }
@@ -1247,6 +1264,7 @@
 </script>
 </body>
 </html>
+
 
 
 
