@@ -407,6 +407,7 @@
     // State Globals
     let frames = 0;
     let score = 0;
+    let startFreeze = 0;
     let isGameOver = false;
     let isPlaying = false;
     let isClashing = false;
@@ -674,29 +675,42 @@
             }
         },
 
-        playSound: function(name) {
+      playSound: function(name) {
             if (this.isMuted || !this.ctx) return;
             
             let bufferKey = name;
+            // 1. Randomize coin sound if available
             if (name === 'coin') {
                 if (this.customBuffers['coin1'] && this.customBuffers['coin2']) 
                     bufferKey = Math.random() > 0.5 ? 'coin1' : 'coin2';
                 else if (this.customBuffers['coin1']) bufferKey = 'coin1';
             }
 
+            // 2. Play the loaded file
             if (this.customBuffers[bufferKey]) {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.customBuffers[bufferKey];
                 const gain = this.ctx.createGain();
-                gain.gain.value = 1.0 * this.masterVolume;
+                
+                // --- VOLUME BOOST FOR COINS ---
+                let vol = 1.0; // Normal volume for jumps/powerups
+                if (name === 'coin') vol = 1.8; // Boost coins by 80%
+                
+                gain.gain.value = vol * this.masterVolume;
+                // ------------------------------
+
                 source.connect(gain); gain.connect(this.ctx.destination);
                 source.start();
                 return;
             }
 
-            // Fallbacks
+            // 3. Fallbacks (Synthesized beeps if files missing)
             if (name === 'jump') this.playTone(300, 0.15, 'triangle', 0.1);
-            else if (name === 'coin') { this.playTone(1200, 0.1, 'sine', 0.1); setTimeout(()=>this.playTone(1800, 0.15, 'sine', 0.1), 80); }
+            else if (name === 'coin') { 
+                // Boosted fallback volume too (0.1 -> 0.3)
+                this.playTone(1200, 0.1, 'sine', 0.3); 
+                setTimeout(()=>this.playTone(1800, 0.15, 'sine', 0.3), 80); 
+            }
             else if (name === 'powerup') { 
                 this.playTone(this.N.A4, 0.1, 'sawtooth', 0.1); 
                 setTimeout(()=>this.playTone(this.N.Cs5, 0.1, 'sawtooth', 0.1), 80);
@@ -1003,6 +1017,10 @@
 
     function jump() {
         if (!isPlaying || isGameOver || isClashing) return;
+        
+        // NEW: If they tap during the freeze, start the game immediately!
+        if (startFreeze > 0) startFreeze = 0; 
+
         player.velocity = CONFIG.jumpStrength;
         createParticle(player.x, player.y + player.height, 'jump');
         if (frames % 10 === 0) AudioSys.playSound('jump');
@@ -1222,8 +1240,19 @@
             if (battery.x < -100) battery.active = false;
         }
 
-        player.velocity += CONFIG.gravity;
+       // --- NEW GRAVITY LOGIC ---
+        // If we are in the "Start Freeze" period, hover in place.
+        if (startFreeze > 0) {
+            startFreeze--; 
+            player.velocity = 0; // Stop falling
+        } else {
+            // Normal Gravity
+            player.velocity += CONFIG.gravity;
+        }
+        
         player.y += player.velocity;
+        // -------------------------
+
         player.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (player.velocity * 0.1)));
 
         if (player.y + player.height > canvas.height || player.y < 0) {
@@ -1377,7 +1406,9 @@
         secretMode.active = false;
         secretMode.timer = 0;
         battery.active = false;
-        
+        startFreeze = 60;   // Freeze for 60 frames (1 second)
+        createObstacle();   // Spawn the first pipe IMMEDIATELY (No waiting!)
+        // --------------------------
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
         isGameOver = false;
@@ -1426,6 +1457,7 @@
 </script>
 </body>
 </html>
+
 
 
 
