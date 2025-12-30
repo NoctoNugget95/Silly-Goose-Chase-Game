@@ -1392,8 +1392,7 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
- // --- UPDATED START GAME (Paste this over your existing startGame) ---
-    function startGame() {
+ function startGame() {
         if (isPlaying || isClashing) return; 
 
         // 1. Audio Wake-up
@@ -1426,14 +1425,14 @@
         document.getElementById('game-stage').classList.remove('blueprint-mode');
         
         // 3. Reset State
-        player.baseX = canvas.width * 0.30;
+        player.baseX = canvas.width * 0.45; 
         player.x = player.baseX;
         player.y = canvas.height / 2;
         player.velocity = 0;
         player.rotation = 0;
         
-        goose.x = -150;
-        goose.targetX = 70;
+        goose.x = -150; 
+        goose.targetX = 150; 
         
         obstacles = [];
         particles = [];
@@ -1444,16 +1443,18 @@
         for(let i=0; i<6; i++) createBgElement(Math.random() * canvas.width);
 
         score = 0;
-        frames = 0;
+        
+        // --- THE FIXES ARE HERE ---
+        frames = 1; // Start at 1 so we don't trigger an immediate double-spawn at 0
         CONFIG.gameSpeed = 3.5; 
         
         secretMode.active = false;
         secretMode.timer = 0;
         battery.active = false;
         
-        // 4. THE FIX: Spawn first obstacle far away!
         startFreeze = 60;   
-        createObstacle(canvas.width + 600); // <--- Pushes it 600px back
+        createObstacle(canvas.width); // Standard start position ensures perfect gap
+        // --------------------------
         
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
@@ -1463,7 +1464,7 @@
         
         loop();
     }
-
+    
     // --- UPDATED WINDOW ONLOAD (Paste this at the bottom) ---
     window.onload = function() {
         resize(); 
@@ -1537,7 +1538,7 @@
     // PASTE THE NEW PAUSE LOGIC HERE (Right before window.onload)
     // ---------------------------------------------------------
     
-    function togglePause() {
+   function togglePause() {
         if (!isPlaying || isGameOver || isClashing) return; 
         
         isPaused = !isPaused;
@@ -1545,10 +1546,14 @@
         const overlay = document.getElementById('pause-overlay');
         if (isPaused) {
             overlay.classList.add('active');
-            if(AudioSys.ctx) AudioSys.ctx.suspend(); 
+            // REMOVED: AudioSys.ctx.suspend(); 
+            // We keep the audio engine running so volume sliders still work!
         } else {
             overlay.classList.remove('active');
-            if(AudioSys.ctx) AudioSys.ctx.resume(); 
+            // REMOVED: AudioSys.ctx.resume();
+            
+            // Safety check: Ensure context is running if it wasn't already
+            if(AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
         }
     }
 
@@ -1628,6 +1633,7 @@
 </script>
 </body>
 </html>
+
 
 
 
