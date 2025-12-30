@@ -722,10 +722,20 @@ window.addEventListener('resize', resizeGame);
                 const gain = this.ctx.createGain();
                 
                 // --- VOLUME BOOST FOR COINS ---
-                let vol = 1.0; // Normal volume for jumps/powerups
-                if (name === 'coin') vol = 1.8; // Boost coins by 80%
+               // --- VOLUME CONTROL ---
+                let vol = 1.0; 
+
+                // Specific tweaks for your coins:
+                if (bufferKey === 'coin1') {
+                    vol = 0.6;  // Quieter (was effectively 1.8)
+                } else if (bufferKey === 'coin2') {
+                    vol = 3.0;  // Louder (was effectively 1.8)
+                } else if (name === 'coin') {
+                    vol = 1.8;  // Fallback for generic coin logic
+                }
                 
                 gain.gain.value = vol * this.masterVolume;
+                // ------------------------------
                 // ------------------------------
 
                 source.connect(gain); gain.connect(this.ctx.destination);
@@ -1032,16 +1042,28 @@ window.addEventListener('resize', resizeGame);
     }
 
     function spawnBattery() {
+        // --- NEW SAFETY CHECK ---
+        // Only allow spawning if we are in the middle of the gap between pipes.
+        // The cycle is 240 frames. We block the first 70 and last 70 frames.
+        const cycle = frames % CONFIG.spawnRate;
+        if (cycle < 70 || cycle > 170) return; 
+        // ------------------------
+
         if (!battery.active && !secretMode.active) {
             battery.active = true;
             battery.x = canvas.width + 100;
+            
             let safeY = canvas.height / 2;
+            
+            // Align with the last obstacle's gap for a smooth path
             if (obstacles.length > 0) {
                 const lastObs = obstacles[obstacles.length - 1];
                 const gapCenter = lastObs.topHeight + (CONFIG.gapSize / 2);
                 safeY = gapCenter;
             }
-            battery.y = safeY + (Math.random() - 0.5) * 60;
+            
+            // Add a little randomness to the height, but keep it reachable
+            battery.y = safeY + (Math.random() - 0.5) * 100;
             battery.y = Math.max(50, Math.min(canvas.height - 100, battery.y));
         }
     }
@@ -1662,6 +1684,7 @@ window.addEventListener('resize', resizeGame);
 </script>
 </body>
 </html>
+
 
 
 
