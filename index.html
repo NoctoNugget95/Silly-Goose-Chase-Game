@@ -330,6 +330,7 @@
 
         <div id="start-screen" class="message-box active">
             <p id="instruction-text">Tap repeatedly to fly!</p>
+            <p style="margin-top:0; font-size: 1.2rem; color: #555;">High Score: <span id="high-score-display">0</span></p>
             <button id="start-btn" onclick="startGame()">Start Flying</button>
         </div>
         
@@ -339,6 +340,7 @@
         <div id="game-over-screen" class="message-box">
             <h1>Silly Goose!</h1>
             <p>Your Score: <span id="final-score">0</span></p>
+            <p style="font-size: 1.5rem; color: #d32f2f;">Best: <span id="best-score-display">0</span></p>
             <button id="restart-btn">Try Again</button>
         </div>
         <div id="pause-overlay">
@@ -436,6 +438,8 @@ window.addEventListener('resize', resizeGame);
     let frames = 0;
     let score = 0;
     let startFreeze = 0;
+    // Load saved high score from the browser, or default to 0
+let highScore = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
     let isGameOver = false;
     let isPlaying = false;
     let isClashing = false;
@@ -1253,6 +1257,12 @@ window.addEventListener('resize', resizeGame);
                 if (p.alpha <= 0) clashCloudParticles.splice(i, 1);
             }
            if (clashTimer <= 0) {
+               if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('sillyGooseHighScore', highScore);
+                    document.getElementById('best-score-display').innerText = highScore;
+                    document.getElementById('high-score-display').innerText = highScore; 
+                }
                 AudioSys.stopMusic();
                 isGameOver = true;
                 isClashing = false;
@@ -1485,6 +1495,9 @@ window.addEventListener('resize', resizeGame);
         for(let i=0; i<6; i++) createBgElement(Math.random() * canvas.width);
 
         score = 0;
+     // Update the high score text whenever we start
+document.getElementById('high-score-display').innerText = highScore;
+document.getElementById('best-score-display').innerText = highScore;
         
         // --- THE FIXES ARE HERE ---
         frames = 1; // Start at 1 so we don't trigger an immediate double-spawn at 0
@@ -1684,6 +1697,7 @@ window.addEventListener('resize', resizeGame);
 </script>
 </body>
 </html>
+
 
 
 
