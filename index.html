@@ -553,8 +553,6 @@ window.addEventListener('resize', resizeGame);
     let frames = 0;
     let score = 0;
     let startFreeze = 0;
-    // Load saved high score from the browser, or default to 0
-let highScore = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
     let isGameOver = false;
     let isPlaying = false;
     let isClashing = false;
@@ -1818,6 +1816,7 @@ document.getElementById('best-score-display').innerText = highScore;
 </script>
 </body>
 </html>
+
 
 
 
