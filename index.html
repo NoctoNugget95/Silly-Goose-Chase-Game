@@ -35,8 +35,12 @@
         /* 2. THE GAME BOX (The Centerpiece) */
         #game-stage {
             position: relative;
-            width: 960px;  /* Fixed Desktop Width */
-            height: 540px; /* Fixed Desktop Height */
+            width: 1280px;  /* Fixed Desktop Width */
+            height: 720px; /* Fixed Desktop Height */
+            /* Safety: Ensure it never overflows small screens */
+            max-width: 100vw;
+            max-height: 100vh;
+            /* -------------------------------- */
             
             /* Background & Border */
             background-color: #f0f0f0;
@@ -1397,6 +1401,7 @@
 </script>
 </body>
 </html>
+
 
 
 
