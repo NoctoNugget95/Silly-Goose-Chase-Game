@@ -571,7 +571,7 @@
         setVolume: function(val) {
             this.masterVolume = parseFloat(val);
             if (this.masterVolume > 0 && this.isMuted) this.toggleMute();
-            if (this.bgMusicGainNode) this.bgMusicGainNode.gain.setValueAtTime(0.4 * this.masterVolume, this.ctx.currentTime);
+            if (this.bgMusicGainNode) this.bgMusicGainNode.gain.setValueAtTime(0.1 * this.masterVolume, this.ctx.currentTime);
         },
 
         playTone: function(freq, duration, type = 'triangle', vol = 0.1) {
@@ -630,7 +630,7 @@
                 source.buffer = buffer;
                 source.loop = true;
                 const gain = this.ctx.createGain();
-                gain.gain.value = 0.4 * this.masterVolume;
+                gain.gain.value = 0.1 * this.masterVolume;
                 source.connect(gain); gain.connect(this.ctx.destination);
                 source.start();
                 this.activeSource = source;
@@ -1457,6 +1457,7 @@
 </script>
 </body>
 </html>
+
 
 
 
