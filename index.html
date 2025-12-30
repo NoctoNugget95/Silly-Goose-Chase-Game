@@ -170,20 +170,72 @@
             background-color: #0d47a1;
         }
         
-        /* ... Keep existing Audio Controls & Rotate Message ... */
-        /* Make sure Audio controls are inside #ui-layer or absolute to #game-stage */
+       /* Audio Controls - Snappier Hover */
         #audio-controls {
             position: absolute;
             top: 20px;
             left: 20px;
-            /* ... rest is same ... */
+            height: 40px;
+            background: rgba(255,255,255,0.8);
+            border: 2px solid #333;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            pointer-events: auto;
+            z-index: 1001;
+            
+            /* The Animation Settings */
+            width: 40px; /* Default Collapsed */
+            overflow: hidden; /* Cut off the slider when closed */
+            transition: width 0.2s ease-out; /* Faster snap (0.2s) */
         }
+        
+        #audio-controls:hover {
+            width: 160px; /* Expanded */
+        }
+
+        #mute-btn {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        #volume-slider {
+            width: 100px;
+            margin-left: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            
+            /* Hide logic */
+            opacity: 0;
+            pointer-events: none; /* Can't touch it when hidden */
+            transition: opacity 0.1s ease-in; /* Fade out fast */
+        }
+
+        /* Show slider ONLY when hovering the container */
+        #audio-controls:hover #volume-slider {
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.3s ease-out 0.1s; /* Slight delay appearing */
+        }}
         
         #score-display {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            /* ... rest is same ... */
+            top: 25px;
+            right: 30px;
+            font-size: 2rem; /* Nice and big */
+            font-family: 'Barriecito', cursive; /* Matches your Title font */
+            color: #333;
+            text-shadow: 2px 2px 0px #fff; /* White outline for readability */
+            z-index: 50; /* Sits above the game, but below Pause/Start screens */
+            pointer-events: none; /* Lets you click "through" it if needed */
+            user-select: none;
         }
 
        /* --- ROTATE MESSAGE STYLES --- */
@@ -205,6 +257,51 @@
         @media only screen and (orientation: portrait) and (max-width: 768px) {
             #rotate-message { display: flex !important; } /* Force show */
             #game-stage { display: none !important; } /* Hide the game box */
+        }
+
+       /* PAUSE SCREEN STYLES */
+        #pause-overlay {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            
+            /* Darken background slightly so text pops */
+            background: rgba(0, 0, 0, 0.4); 
+            
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 900; /* On top of everything */
+            pointer-events: auto; /* Catch clicks */
+            backdrop-filter: blur(2px); /* Optional: slight blur effect */
+        }
+        
+        #pause-overlay.active { display: flex !important; }
+        
+        .pause-title {
+            font-family: 'Barriecito', cursive;
+            font-size: 6rem;
+            color: #fff;
+            text-shadow: 4px 4px 0px #000;
+            margin: 0;
+            letter-spacing: 5px;
+        }
+        
+        .pause-subtitle {
+            font-family: 'Comic Sans MS', sans-serif;
+            font-size: 1.5rem;
+            color: #fff;
+            text-shadow: 2px 2px 0px #000;
+            margin-top: 10px;
+        }
+        
+        /* Auto-Switch Text based on device type */
+        .desktop-hint { display: block; }
+        .mobile-hint { display: none; }
+        
+        @media (hover: none) and (pointer: coarse) {
+            .desktop-hint { display: none; }
+            .mobile-hint { display: block; }
         }
        
     </style>
@@ -233,6 +330,7 @@
 
         <div id="start-screen" class="message-box active">
             <p id="instruction-text">Tap repeatedly to fly!</p>
+            <p style="margin-top:0; font-size: 1.2rem; color: #555;">High Score: <span id="high-score-display">0</span></p>
             <button id="start-btn" onclick="startGame()">Start Flying</button>
         </div>
         
@@ -242,7 +340,13 @@
         <div id="game-over-screen" class="message-box">
             <h1>Silly Goose!</h1>
             <p>Your Score: <span id="final-score">0</span></p>
+            <p style="font-size: 1.5rem; color: #d32f2f;">Best: <span id="best-score-display">0</span></p>
             <button id="restart-btn">Try Again</button>
+        </div>
+        <div id="pause-overlay">
+            <h1 class="pause-title">PAUSED</h1>
+            <p class="pause-subtitle desktop-hint">Click Anywhere or Press Spacebar to Resume</p>
+            <p class="pause-subtitle mobile-hint">Tap Anywhere to Resume</p>
         </div>
     </div>
     
@@ -314,16 +418,34 @@
     // Canvas Globals
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+
+    // --- START OF COPY ---
+function resizeGame() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Optional: Keep pixel art sharp
+    ctx.imageSmoothingEnabled = false; 
+}
+
+// 1. Resize immediately so the canvas is the right size before the game starts
+resizeGame();
+
+// 2. Resize again if the user stretches the browser window
+window.addEventListener('resize', resizeGame);
     
+// --- END OF COPY ---
     // State Globals
     let frames = 0;
     let score = 0;
     let startFreeze = 0;
+    // Load saved high score from the browser, or default to 0
+let highScore = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
     let isGameOver = false;
     let isPlaying = false;
     let isClashing = false;
     let clashTimer = 0;
     let doodleTime = 0;
+    let isPaused = false;
     
     // Entities
     const secretMode = { active: false, timer: 0, maxDuration: 300 };
@@ -604,10 +726,20 @@
                 const gain = this.ctx.createGain();
                 
                 // --- VOLUME BOOST FOR COINS ---
-                let vol = 1.0; // Normal volume for jumps/powerups
-                if (name === 'coin') vol = 1.8; // Boost coins by 80%
+               // --- VOLUME CONTROL ---
+                let vol = 1.0; 
+
+                // Specific tweaks for your coins:
+                if (bufferKey === 'coin1') {
+                    vol = 0.6;  // Quieter (was effectively 1.8)
+                } else if (bufferKey === 'coin2') {
+                    vol = 3.0;  // Louder (was effectively 1.8)
+                } else if (name === 'coin') {
+                    vol = 1.8;  // Fallback for generic coin logic
+                }
                 
                 gain.gain.value = vol * this.masterVolume;
+                // ------------------------------
                 // ------------------------------
 
                 source.connect(gain); gain.connect(this.ctx.destination);
@@ -883,17 +1015,30 @@
         });
     }
 
-    function createObstacle() {
+    function createObstacle(overrideX) {
+        // 1. Logic to accept a custom position (e.g. 600px further back)
+        let x = (typeof overrideX === 'number') ? overrideX : canvas.width;
+
+        // 2. Your existing height math
         const minHeight = 50;
         const maxHeight = canvas.height - CONFIG.gapSize - minHeight;
         const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+
+        // 3. Create the obstacle (Using 'x' instead of 'canvas.width')
         obstacles.push({
-            x: canvas.width, topHeight: topHeight, bottomY: topHeight + CONFIG.gapSize,
-            width: 70, passed: false, colorIndex: Math.floor(Math.random() * 3)
+            x: x, 
+            topHeight: topHeight, 
+            bottomY: topHeight + CONFIG.gapSize,
+            width: 70, 
+            passed: false, 
+            colorIndex: Math.floor(Math.random() * 3)
         });
+
+        // 4. Your existing coin logic (Updated to spawn relative to 'x')
         if (Math.random() < CONFIG.coinChancePerGap) {
             const distanceToNext = CONFIG.spawnRate * CONFIG.gameSpeed;
-            const coinX = canvas.width + (distanceToNext / 2) + 35; 
+            // We use 'x' here so the coin stays with the pipe, even if it's far away
+            const coinX = x + (distanceToNext / 2) + 35; 
             const gapCenterY = topHeight + (CONFIG.gapSize / 2);
             const coinY = gapCenterY + (Math.random() - 0.5) * 100;
             createCoin(coinX, coinY);
@@ -901,16 +1046,28 @@
     }
 
     function spawnBattery() {
+        // --- NEW SAFETY CHECK ---
+        // Only allow spawning if we are in the middle of the gap between pipes.
+        // The cycle is 240 frames. We block the first 70 and last 70 frames.
+        const cycle = frames % CONFIG.spawnRate;
+        if (cycle < 70 || cycle > 170) return; 
+        // ------------------------
+
         if (!battery.active && !secretMode.active) {
             battery.active = true;
             battery.x = canvas.width + 100;
+            
             let safeY = canvas.height / 2;
+            
+            // Align with the last obstacle's gap for a smooth path
             if (obstacles.length > 0) {
                 const lastObs = obstacles[obstacles.length - 1];
                 const gapCenter = lastObs.topHeight + (CONFIG.gapSize / 2);
                 safeY = gapCenter;
             }
-            battery.y = safeY + (Math.random() - 0.5) * 60;
+            
+            // Add a little randomness to the height, but keep it reachable
+            battery.y = safeY + (Math.random() - 0.5) * 100;
             battery.y = Math.max(50, Math.min(canvas.height - 100, battery.y));
         }
     }
@@ -1100,6 +1257,12 @@
                 if (p.alpha <= 0) clashCloudParticles.splice(i, 1);
             }
            if (clashTimer <= 0) {
+               if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('sillyGooseHighScore', highScore);
+                    document.getElementById('best-score-display').innerText = highScore;
+                    document.getElementById('high-score-display').innerText = highScore; 
+                }
                 AudioSys.stopMusic();
                 isGameOver = true;
                 isClashing = false;
@@ -1282,12 +1445,9 @@
     }
 
  function startGame() {
-        // 1. STOP DOUBLE CLICKS: If game is running, ignore clicks
         if (isPlaying || isClashing) return; 
 
-        console.log("Start Button Clicked!"); 
-
-        // 2. Audio Wake-up
+        // 1. Audio Wake-up
         if (typeof AudioSys !== 'undefined') {
             AudioSys.init();
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
@@ -1297,41 +1457,34 @@
             AudioSys.tempo = 1.45;
         }
 
-        // 3. UI Hiding
+        // 2. UI Cleanup
         const startScreen = document.getElementById('start-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const mainTitle = document.getElementById('main-title');
+        const revImg = document.getElementById('start-rev-img');
+        const gooseImg = document.getElementById('start-goose-img');
         
-        if (startScreen) {
-            startScreen.classList.remove('active');
-            startScreen.style.display = 'none'; 
-        }
-        
+        if (startScreen) startScreen.classList.remove('active');
         if (gameOverScreen) {
             gameOverScreen.classList.remove('active');
             gameOverScreen.classList.remove('spin-in'); 
             gameOverScreen.style.display = 'none';
         }
-        
         if (mainTitle) mainTitle.classList.add('hidden');
+        if (revImg) revImg.style.display = 'none';
+        if (gooseImg) gooseImg.style.display = 'none';
         
-        // Hide Start Characters
-        const revImg = document.getElementById('start-rev-img');
-        const gooseImg = document.getElementById('start-goose-img');
-        if(revImg) revImg.style.display = 'none';
-        if(gooseImg) gooseImg.style.display = 'none';
+        document.getElementById('game-stage').classList.remove('blueprint-mode');
         
-       document.getElementById('game-stage').classList.remove('blueprint-mode');
-        
-        // 4. Reset Game State
-        player.baseX = canvas.width * 0.30;
+        // 3. Reset State
+        player.baseX = canvas.width * 0.30; 
         player.x = player.baseX;
         player.y = canvas.height / 2;
         player.velocity = 0;
         player.rotation = 0;
         
-        goose.x = -150;
-        goose.targetX = 70;
+        goose.x = -150; 
+        goose.targetX = 150; 
         
         obstacles = [];
         particles = [];
@@ -1342,16 +1495,21 @@
         for(let i=0; i<6; i++) createBgElement(Math.random() * canvas.width);
 
         score = 0;
-        frames = 0;
+     // Update the high score text whenever we start
+document.getElementById('high-score-display').innerText = highScore;
+document.getElementById('best-score-display').innerText = highScore;
+        
+        // --- THE FIXES ARE HERE ---
+        frames = 1; // Start at 1 so we don't trigger an immediate double-spawn at 0
         CONFIG.gameSpeed = 3.5; 
         
         secretMode.active = false;
         secretMode.timer = 0;
         battery.active = false;
         
-        // 5. START FREEZE & IMMEDIATE OBSTACLE
         startFreeze = 60;   
-        createObstacle();   
+        createObstacle(canvas.width); // Standard start position ensures perfect gap
+        // --------------------------
         
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
@@ -1362,7 +1520,57 @@
         loop();
     }
     
+    // --- UPDATED WINDOW ONLOAD (Paste this at the bottom) ---
+    window.onload = function() {
+        resize(); 
+        document.getElementById('loading').style.display = 'none';
+        
+        // 1. Setup Audio Controls (Slider & Mute)
+        const volSlider = document.getElementById('volume-slider');
+        const muteBtn = document.getElementById('mute-btn');
+        
+        if(volSlider) {
+            volSlider.addEventListener('input', (e) => {
+                e.stopPropagation();
+                if(AudioSys) AudioSys.setVolume(e.target.value);
+            });
+            // These prevent the game from jumping when you click the slider
+            volSlider.addEventListener('mousedown', (e) => e.stopPropagation());
+            volSlider.addEventListener('click', (e) => e.stopPropagation());
+            volSlider.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+
+        if(muteBtn) {
+            muteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(AudioSys) {
+                    AudioSys.toggleMute();
+                    muteBtn.innerText = AudioSys.isMuted ? '🔇' : '🔊';
+                }
+            });
+            muteBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+            muteBtn.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+
+        // 2. Start Screen Music Listener (One-time click)
+        window.addEventListener('click', function musicStarter() {
+            if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
+            
+            if (!AudioSys.isPlaying && AUDIO_FILES.music_start) {
+                AudioSys.playTrack('start_screen');
+            }
+            window.removeEventListener('click', musicStarter);
+        }, {once:true});
+    };
+    
     function loop() {
+        if (isPaused) {
+            // If paused, do NOTHING (stop updating, stop drawing)
+            // But keep requesting frames so it resumes instantly
+            requestAnimationFrame(loop);
+            return; 
+        }
+
         if (isPlaying || isClashing) { 
             update(); 
             draw(); 
@@ -1373,7 +1581,7 @@
     }
     
     // --- EVENTS & BOOT ---
-    document.getElementById('start-btn').addEventListener('click', startGame);
+   document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
     
     window.addEventListener('resize', resize);
@@ -1381,19 +1589,113 @@
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, { passive: false });
     canvas.addEventListener('mousedown', (e) => { jump(); });
 
-   window.onload = function() {
-        resize(); // Ensure canvas is ready
+    // ---------------------------------------------------------
+    // PASTE THE NEW PAUSE LOGIC HERE (Right before window.onload)
+    // ---------------------------------------------------------
+    
+   function togglePause() {
+        if (!isPlaying || isGameOver || isClashing) return; 
+        
+        isPaused = !isPaused;
+        
+        const overlay = document.getElementById('pause-overlay');
+        if (isPaused) {
+            overlay.classList.add('active');
+            // REMOVED: AudioSys.ctx.suspend(); 
+            // We keep the audio engine running so volume sliders still work!
+        } else {
+            overlay.classList.remove('active');
+            // REMOVED: AudioSys.ctx.resume();
+            
+            // Safety check: Ensure context is running if it wasn't already
+            if(AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
+        }
+    }
+
+    // 1. Tab Key to Pause / Space to Resume
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Tab') {
+            e.preventDefault(); 
+            togglePause();
+        }
+        if (e.code === 'Space' && isPaused) {
+            togglePause();
+        }
+    });
+
+    // 2. Click to Resume
+    document.getElementById('pause-overlay').addEventListener('click', () => {
+        if (isPaused) togglePause();
+    });
+    
+    // 3. Mobile Tap to Resume
+    document.getElementById('pause-overlay').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (isPaused) togglePause();
+    }, {passive: false});
+
+    // ---------------------------------------------------------
+    // END OF NEW CODE
+    // ---------------------------------------------------------
+
+  window.onload = function() {
+      // Update high score text immediately on page load
+      if(typeof highScore !== 'undefined') {
+        document.getElementById('high-score-display').innerText = highScore;
+        document.getElementById('best-score-display').innerText = highScore;
+    }
+      // -----------------
+        resize(); 
         document.getElementById('loading').style.display = 'none';
         
-        // Start screen music listener
+        // --- 1. SETUP AUDIO CONTROLS ---
+        const volSlider = document.getElementById('volume-slider');
+        const muteBtn = document.getElementById('mute-btn');
+        
+        // Volume Slider Logic
+        if(volSlider) {
+            volSlider.addEventListener('input', (e) => {
+                e.stopPropagation(); 
+                // Wake up audio if sleeping (Essential for Start Screen)
+                if(AudioSys && AudioSys.ctx && AudioSys.ctx.state === 'suspended') {
+                    AudioSys.ctx.resume();
+                }
+                if(AudioSys) AudioSys.setVolume(e.target.value);
+            });
+            // Prevent clicks from pausing game or jumping bird
+            volSlider.addEventListener('mousedown', (e) => e.stopPropagation());
+            volSlider.addEventListener('click', (e) => e.stopPropagation());
+            volSlider.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+
+        // Mute Button Logic
+        if(muteBtn) {
+            muteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Wake up audio here too!
+                if(AudioSys && AudioSys.ctx && AudioSys.ctx.state === 'suspended') {
+                    AudioSys.ctx.resume();
+                }
+
+                if(AudioSys) {
+                    AudioSys.toggleMute();
+                    muteBtn.innerText = AudioSys.isMuted ? '🔇' : '🔊';
+                }
+            });
+            // Prevent clicks from pausing game or jumping bird
+            muteBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+            muteBtn.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+
+        // --- 2. START SCREEN MUSIC LISTENER ---
+        // This ensures music plays if the user clicks ANYWHERE (except the controls)
         window.addEventListener('click', function musicStarter() {
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
             
-            // FIX: We check 'AUDIO_FILES', not 'CUSTOM_AUDIO'
             if (!AudioSys.isPlaying && AUDIO_FILES.music_start) {
                 AudioSys.playTrack('start_screen');
             }
-            
             window.removeEventListener('click', musicStarter);
         }, {once:true});
     };
@@ -1401,6 +1703,19 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
