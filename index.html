@@ -366,6 +366,8 @@
     // In-Game Player Character (The one you fly) - SVG Code or Image Path
     const PERMANENT_PLAYER_SVG = `sprite.png`; 
 
+    // NEW: Secret Level Character (The one you just made)
+    const SECRET_PLAYER_SRC = `secret_player.png`;
     // Start Screen Images (File paths or Base64)
     // Left side image
     const START_SCREEN_GOOSE_SRC = `goose.png`; 
@@ -437,20 +439,24 @@
         // Use the fallback blue box if it fails, but don't crash
         playerImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PC9zdmc+";
     };
+
     
     // Set the source (Trim removes any accidental spaces)
     if (PERMANENT_PLAYER_SVG) {
         playerImg.src = PERMANENT_PLAYER_SVG.trim();
     }
-
-    // 2. Start Screen Characters
+// 2. Secret Level Rev
+    const secretPlayerImg = new Image();
+    if (SECRET_PLAYER_SRC) secretPlayerImg.src = SECRET_PLAYER_SRC.trim();
+    
+    // 3. Start Screen Characters
     const startRevImg = new Image();
     if (START_SCREEN_REV_SRC) startRevImg.src = START_SCREEN_REV_SRC.trim();
 
     const startGooseImg = new Image();
     if (START_SCREEN_GOOSE_SRC) startGooseImg.src = START_SCREEN_GOOSE_SRC.trim();
 
-    // 3. HTML Overlay Elements (Keeps the start screen working)
+    // 4. HTML Overlay Elements (Keeps the start screen working)
     const revImg = document.getElementById('start-rev-img');
     const gooseImg = document.getElementById('start-goose-img');
     
@@ -467,7 +473,7 @@
         }
     }
 
-    // 4. Audio Setup
+    // 5. Audio Setup
     const custom_audio = {}; 
 
     for (let key in AUDIO_FILES) {
@@ -477,7 +483,7 @@
         }
     }
 
-    // --- 4. AUDIO ENGINE ---
+    // --- 6. AUDIO ENGINE ---
     const AudioSys = {
         ctx: null, isPlaying: false, isMuted: false, tempo: 1.45,
         masterVolume: 0.5, customBuffers: {}, activeSource: null, bgMusicGainNode: null,
@@ -1414,6 +1420,7 @@
 </script>
 </body>
 </html>
+
 
 
 
