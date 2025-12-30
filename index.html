@@ -335,13 +335,20 @@
 
         <div id="start-screen" class="message-box active">
             <h1 style="font-size: 3rem; margin: 0 0 10px 0; color: #d32f2f;">Silly Goose</h1>
-            
-            <div style="margin-bottom: 10px; font-size: 1.2rem; color: #555;">
-                Playing as: <strong id="current-username-display" style="color:#000;">Guest</strong>
-                <a href="#" onclick="changeUser()" style="font-size: 0.9rem; color: #555; text-decoration: underline; margin-left: 5px;">(Switch)</a>
+        
+        <div style="background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 10px; margin-bottom: 20px; cursor: pointer;" onclick="changeUser()">
+            <div style="font-size: 1.1rem; color: #856404; margin-bottom: 5px;">
+                ⚠️ Scores only save if you have a name!
             </div>
+            <div style="font-size: 1.5rem; color: #333;">
+                Playing as: <strong id="current-username-display" style="color:#d32f2f; font-size: 1.8rem; text-decoration: underline;">Guest</strong>
+            </div>
+            <div style="font-size: 0.9rem; color: #555; margin-top: 5px;">
+                (Click here to set your Pilot Name)
+            </div>
+        </div>
 
-            <button id="start-btn" onclick="startGame()">Start Flying</button>
+        <button id="start-btn" onclick="startGame()">Start Flying</button>
 
             <div id="leaderboard-container" style="margin-top: 20px; width: 100%;">
                 <h3 style="margin: 0 0 5px 0; font-size: 1.5rem; text-decoration: underline;">Global Top 5</h3>
@@ -1270,6 +1277,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
