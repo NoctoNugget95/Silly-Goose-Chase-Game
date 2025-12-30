@@ -961,14 +961,21 @@
         }
     }
 
-    function jump() {
+   function jump() {
+        // Stop if game is paused/over
         if (!isPlaying || isGameOver || isClashing) return;
-        if (startFreeze > 0) startFreeze = 0;
+        
+        // FIX: If we are in the "Get Ready" freeze time, ignore the click!
+        // This prevents the game from reacting to your "Try Again" click.
+        if (startFreeze > 0) return;
+
         player.velocity = CONFIG.jumpStrength;
         createParticle(player.x, player.y + player.height, 'jump');
+        
+        // Play jump sound (every few frames to prevent spamming)
         if (frames % 10 === 0) AudioSys.playSound('jump');
     }
-
+    
     function startGame() {
         if (isPlaying || isClashing) return; 
 
@@ -1210,16 +1217,28 @@
     document.getElementById('pause-overlay').addEventListener('click', togglePause);
 
     // --- ON LOAD ---
-    window.onload = function() {
+   window.onload = function() {
         resize();
         document.getElementById('loading').style.display = 'none';
         updateUserDisplay();
         
+        // --- FIX: START LOADING AUDIO IMMEDIATELY ---
+        // We initialize the system now so it downloads the files while you are looking at the menu.
+        if (typeof AudioSys !== 'undefined') {
+            AudioSys.init(); 
+        }
+
+        // Audio controls listeners
         const vs = document.getElementById('volume-slider');
-        if(vs) vs.addEventListener('input', (e) => { e.stopPropagation(); AudioSys.setVolume(e.target.value); if(AudioSys.ctx.state==='suspended')AudioSys.ctx.resume(); });
+        if(vs) vs.addEventListener('input', (e) => { 
+            e.stopPropagation(); 
+            AudioSys.setVolume(e.target.value); 
+            if(AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume(); 
+        });
         
+        // Start screen music (Plays when you click anywhere)
         window.addEventListener('click', function ms() {
-            if(AudioSys.ctx && AudioSys.ctx.state==='suspended') AudioSys.ctx.resume();
+            if(AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
             if(!AudioSys.isPlaying) AudioSys.playTrack('start_screen');
             window.removeEventListener('click', ms);
         }, {once:true});
@@ -1228,6 +1247,7 @@
 </script>
 </body>
 </html>
+
 
 
 
