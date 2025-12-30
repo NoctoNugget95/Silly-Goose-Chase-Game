@@ -1037,7 +1037,7 @@
                 }
             }
             // Score
-            if (obs.x + obs.width < player.x && !obs.passed) {
+           if (obs.x + (obs.width / 2) < player.x && !obs.passed) {
                 score++; obs.passed = true;
                 AudioSys.playTone(1200, 0.1, 'sine', 0.6);
                 document.getElementById('score-display').innerText = `Score: ${score}`;
@@ -1270,6 +1270,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
