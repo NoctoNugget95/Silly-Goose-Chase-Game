@@ -1166,11 +1166,29 @@
         }
     }
 
-    function loop() {
+   function loop() {
         if (!isPaused) {
-            if (isPlaying || isClashing) { update(); draw(); }
-            else if (isGameOver) draw();
+            try {
+                // Try to run the game frame
+                if (isPlaying || isClashing) { update(); draw(); }
+                else if (isGameOver) draw();
+                
+            } catch (error) {
+                // IF IT CRASHES:
+                console.error("💥 Game Loop Error:", error);
+                
+                // 1. If we are in Secret Mode, it's likely the culprit. Turn it off.
+                if (secretMode.active) {
+                    console.warn("⚠️ Secret Mode crashed. Disabling it to save the game.");
+                    secretMode.active = false;
+                    document.getElementById('game-stage').classList.remove('blueprint-mode');
+                    CONFIG.gameSpeed = 3.5; // Reset speed
+                }
+                
+                // 2. If it wasn't Secret Mode, try to just skip this bad frame.
+            }
         }
+        // Keep the heart beating no matter what!
         requestAnimationFrame(loop);
     }
 
@@ -1214,6 +1232,7 @@
 
 </script>
 </html>
+
 
 
 
