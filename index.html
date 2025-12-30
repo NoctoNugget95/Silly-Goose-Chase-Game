@@ -442,32 +442,43 @@
           }, (error) => {});
     }
 
-    // --- FUNCTION 2: Save Score (Silent Mode FIX) ---
+   // --- FUNCTION 2: Save Score (Robust Version) ---
     function trySaveScore(newScore) {
+        // 1. Always update LOCAL High Score immediately
         if (newScore > highScore) {
             highScore = newScore;
             localStorage.setItem('sillyGooseHighScore', highScore);
+            
+            // FIX A: Force the screen to update "Your Best" RIGHT NOW
+            updateUserDisplay();
         }
-        if (!db) return;
 
-        if (newScore >= highScore) {
-            // FIX: Only prompt if Guest. Otherwise save silently.
-            if (currentUser === "Guest") {
-                const name = prompt("You made the Leaderboard! Enter a name to save it:");
-                if (name && name.trim().length > 0) {
-                    currentUser = name.trim();
-                    localStorage.setItem('sillyGooseUsername', currentUser);
-                    updateUserDisplay();
-                } else { return; }
+        // 2. CHECK NAME (Before Database Check)
+        // If you are Guest and got a high score, we save your name locally first.
+        // This ensures your name is remembered even if the internet is glitchy.
+        if (newScore >= highScore && currentUser === "Guest") {
+            const name = prompt("New Personal Best! Enter your name:");
+            if (name && name.trim().length > 0) {
+                currentUser = name.trim();
+                localStorage.setItem('sillyGooseUsername', currentUser);
+                updateUserDisplay();
             }
-            // Silent Save
+        }
+
+        // 3. CLOUD SAVE (Only runs if we have a name and internet)
+        if (db && currentUser !== "Guest") {
             db.collection("leaderboard").doc(currentUser).set({
-                name: currentUser, score: newScore,
+                name: currentUser, 
+                score: newScore, // We save the current run's score
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => fetchLeaderboard()).catch((err) => console.error(err));
+            })
+            .then(() => {
+                console.log("Score saved silently to cloud.");
+                fetchLeaderboard(); // Refresh the board
+            })
+            .catch((err) => console.error("Cloud save failed (Local save is safe)", err));
         }
     }
-
     function updateUserDisplay() {
         const el = document.getElementById('current-username-display');
         if (el) el.innerText = currentUser;
@@ -1159,6 +1170,7 @@
 
 </script>
 </html>
+
 
 
 
