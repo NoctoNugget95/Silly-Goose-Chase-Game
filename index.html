@@ -182,7 +182,7 @@
             display: flex;
             align-items: center;
             pointer-events: auto;
-            z-index: 100;
+            z-index: 1001;
             
             /* The Animation Settings */
             width: 40px; /* Default Collapsed */
@@ -227,10 +227,15 @@
         
         #score-display {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            scale: 1.2;
-            /* ... rest is same ... */
+            top: 25px;
+            right: 30px;
+            font-size: 2rem; /* Nice and big */
+            font-family: 'Barriecito', cursive; /* Matches your Title font */
+            color: #333;
+            text-shadow: 2px 2px 0px #fff; /* White outline for readability */
+            z-index: 50; /* Sits above the game, but below Pause/Start screens */
+            pointer-events: none; /* Lets you click "through" it if needed */
+            user-select: none;
         }
 
        /* --- ROTATE MESSAGE STYLES --- */
@@ -1583,49 +1588,58 @@
     // END OF NEW CODE
     // ---------------------------------------------------------
 
-   window.onload = function() {
-        resize(); // Ensure canvas is ready
+  window.onload = function() {
+        resize(); 
         document.getElementById('loading').style.display = 'none';
-
-       // --- NEW: AUDIO CONTROLS LOGIC ---
+        
+        // --- 1. SETUP AUDIO CONTROLS ---
         const volSlider = document.getElementById('volume-slider');
         const muteBtn = document.getElementById('mute-btn');
         
-        // 1. Volume Slider
+        // Volume Slider Logic
         if(volSlider) {
             volSlider.addEventListener('input', (e) => {
-                // Prevent the game from jumping when dragging slider
                 e.stopPropagation(); 
+                // Wake up audio if sleeping (Essential for Start Screen)
+                if(AudioSys && AudioSys.ctx && AudioSys.ctx.state === 'suspended') {
+                    AudioSys.ctx.resume();
+                }
                 if(AudioSys) AudioSys.setVolume(e.target.value);
             });
-            // Stop mouse clicks on the slider from pausing the game
+            // Prevent clicks from pausing game or jumping bird
             volSlider.addEventListener('mousedown', (e) => e.stopPropagation());
             volSlider.addEventListener('click', (e) => e.stopPropagation());
+            volSlider.addEventListener('touchstart', (e) => e.stopPropagation());
         }
 
-        // 2. Mute Button
+        // Mute Button Logic
         if(muteBtn) {
             muteBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Don't pause/jump when muting
+                e.stopPropagation();
+                
+                // Wake up audio here too!
+                if(AudioSys && AudioSys.ctx && AudioSys.ctx.state === 'suspended') {
+                    AudioSys.ctx.resume();
+                }
+
                 if(AudioSys) {
                     AudioSys.toggleMute();
-                    // Update the icon
                     muteBtn.innerText = AudioSys.isMuted ? '🔇' : '🔊';
                 }
             });
+            // Prevent clicks from pausing game or jumping bird
             muteBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+            muteBtn.addEventListener('touchstart', (e) => e.stopPropagation());
         }
-        // ---------------------------------
-        
-        // Start screen music listener
+
+        // --- 2. START SCREEN MUSIC LISTENER ---
+        // This ensures music plays if the user clicks ANYWHERE (except the controls)
         window.addEventListener('click', function musicStarter() {
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
             
-            // FIX: We check 'AUDIO_FILES', not 'CUSTOM_AUDIO'
             if (!AudioSys.isPlaying && AUDIO_FILES.music_start) {
                 AudioSys.playTrack('start_screen');
             }
-            
             window.removeEventListener('click', musicStarter);
         }, {once:true});
     };
@@ -1633,6 +1647,7 @@
 </script>
 </body>
 </html>
+
 
 
 
