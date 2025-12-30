@@ -333,24 +333,24 @@
     <div id="ui-layer">
         <h1 id="main-title">Silly Goose Chase</h1>
 
-       <div id="start-screen" class="message-box active">
+      <div id="start-screen" class="message-box active">
             
-       <div onclick="changeUser()" style="
-                background: #e3f2fd; /* Softer, lighter sky blue (easier on eyes) */
-                border: 5px solid #0d47a1; /* Deep Navy border */
-                border-radius: 25px; 
-                padding: 15px; 
-                margin-bottom: 25px; 
+            <div onclick="changeUser()" style="
+                background: #e3f2fd; 
+                border: 4px solid #0d47a1; /* Slightly thinner border */
+                border-radius: 20px; 
+                padding: 10px 15px; /* Less padding */
+                margin-bottom: 15px; /* Less gap below */
                 cursor: pointer;
-                box-shadow: 6px 6px 0px #0a2472; /* Darker navy shadow */
+                box-shadow: 4px 4px 0px #0a2472; 
                 transition: transform 0.1s;
                 text-align: center;
                 font-family: 'Barriecito', cursive; 
             ">
                 <div style="
-                    color: #0d47a1; /* Deep Navy (High contrast) */
-                    font-size: 1.6rem; 
-                    margin-bottom: 5px;
+                    color: #0d47a1; 
+                    font-size: 1.3rem; /* Scaled down */
+                    margin-bottom: 2px;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                 ">
@@ -358,43 +358,43 @@
                 </div>
                 
                 <div style="
-                    font-size: 3.5rem; 
-                    color: #1a1a1a; /* Soft Black (Best readability) */
+                    font-size: 2.8rem; /* Scaled down from 3.5rem */
+                    color: #1a1a1a; 
                     line-height: 1.0;
-                    text-shadow: 3px 3px 0px #fff; 
+                    text-shadow: 2px 2px 0px #fff; 
                 ">
                     <span id="current-username-display">Guest</span> 
-                    <span style="font-size: 2rem; color: #1976d2; vertical-align: middle;">✎</span>
+                    <span style="font-size: 1.8rem; color: #1976d2; vertical-align: middle;">✎</span>
                 </div>
 
                 <div style="
-                    border-bottom: 4px dotted #1976d2; 
+                    border-bottom: 3px dotted #1976d2; 
                     width: 70%; 
-                    margin: 10px auto 10px auto; 
+                    margin: 5px auto 5px auto; /* Tighter margins */
                     opacity: 0.6;
                 "></div>
 
                 <div style="
-                    color: #0d47a1; /* Deep Navy */
-                    font-size: 1.2rem; 
+                    color: #0d47a1; 
+                    font-size: 1rem; /* Scaled down */
                 ">
                     Show <span style="color:#000">the world</span> who's <span style="color:#000">top goose!</span>
                 </div>
             </div>
-           
+
             <button id="start-btn" onclick="startGame()">Start Flying</button>
 
-            <div id="leaderboard-container" style="margin-top: 25px; width: 100%;">
-                <h3 style="margin: 0 0 10px 0; font-size: 1.5rem; color: #333; text-decoration: none; border-bottom: 2px solid #333; display: inline-block; padding-bottom: 5px;">Global Top 5</h3>
+            <div id="leaderboard-container" style="margin-top: 15px; width: 100%;">
+                <h3 style="margin: 0 0 5px 0; font-size: 1.4rem; color: #333; text-decoration: none; border-bottom: 2px solid #333; display: inline-block; padding-bottom: 2px;">Global Top 5</h3>
                 <div id="leaderboard-list" style="
-                    font-size: 1.1rem; 
+                    font-size: 1rem; 
                     text-align: left; 
                     background: #fff; 
                     padding: 0; 
                     border: none; 
-                    min-height: 100px;
+                    min-height: 80px;
                 ">
-                    <div style="color: #999; padding: 20px;">Loading scores...</div>
+                    <div style="color: #999; padding: 10px;">Loading scores...</div>
                 </div>
             </div>
         </div>
@@ -1311,6 +1311,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
