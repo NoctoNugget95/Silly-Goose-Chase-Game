@@ -1298,8 +1298,9 @@
                 }
             }
 
-            // Scoring (With Arcade Ding)
-            if (obs.x + obs.width < player.x && !obs.passed) {
+           // Scoring (With Snappy Arcade Ding)
+            // Changed logic: Triggers as soon as the pipe clears the bird's beak!
+            if (obs.x + obs.width < player.x + player.width + 10 && !obs.passed) {
                 score++;
                 obs.passed = true;
                 
@@ -1483,6 +1484,7 @@
 </script>
 </body>
 </html>
+
 
 
 
