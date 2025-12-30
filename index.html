@@ -321,7 +321,7 @@
 <div id="game-stage">
 
     <canvas id="gameCanvas"></canvas>
-
+    
     <div id="score-display">Score: 0</div>
 
     <div id="audio-controls">
@@ -332,7 +332,7 @@
     <div id="ui-layer">
         <h1 id="main-title">Silly Goose Chase</h1>
 
-      <div id="start-screen" class="message-box active">
+        <div id="start-screen" class="message-box active">
             <h1 style="font-size: 3rem; margin: 0 0 10px 0; color: #d32f2f;">Silly Goose</h1>
             
             <div style="margin-bottom: 10px; font-size: 1.2rem; color: #555;">
@@ -350,15 +350,16 @@
             </div>
         </div>
         
-        <img id="start-rev-img" alt="Rev">
-        <img id="start-goose-img" alt="Goose">
+        <img id="start-rev-img" alt="Rev" style="display:block;">
+        <img id="start-goose-img" alt="Goose" style="display:block;">
         
         <div id="game-over-screen" class="message-box">
             <h1>Silly Goose!</h1>
             <p>Your Score: <span id="final-score">0</span></p>
-            <p style="font-size: 1.5rem; color: #d32f2f;">Best: <span id="best-score-display">0</span></p>
+            <p style="font-size: 1.5rem; color: #d32f2f;">Your Best: <span id="best-score-display">0</span></p>
             <button id="restart-btn">Try Again</button>
         </div>
+
         <div id="pause-overlay">
             <h1 class="pause-title">PAUSED</h1>
             <p class="pause-subtitle desktop-hint">Click Anywhere or Press Spacebar to Resume</p>
@@ -367,8 +368,8 @@
     </div>
     
     <div id="loading">Loading...</div>
+</div>
 
-<!-- FAILSAFE SCRIPT -->
 <script>
     window.addEventListener('load', function() {
         setTimeout(function() {
@@ -1848,6 +1849,7 @@ document.getElementById('best-score-display').innerText = highScore;
 </script>
 </body>
 </html>
+
 
 
 
