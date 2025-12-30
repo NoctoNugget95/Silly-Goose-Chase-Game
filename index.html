@@ -550,9 +550,18 @@
     };
 
     const CONFIG = {
-        gravity: 0.2, jumpStrength: -6.5, gameSpeed: 3.3, spawnRate: 240, 
-        gapSize: 220, playerScale: 0.15, doodleWobbleSpeed: 0.1,
-        clashDuration: 180, batterySpawnChance: 0.005, coinChancePerGap: 0.25
+        const CONFIG = {
+        gravity: 0.2, 
+        jumpStrength: -6.5, 
+        gameSpeed: 3.3, 
+        spawnRate: 240, 
+        gapSize: 220, 
+        playerScale: 0.15, 
+        doodleWobbleSpeed: 0.1,
+        clashDuration: 180, 
+        batterySpawnChance: 0.005, 
+        coinChancePerGap: 0.8 // FIX: Changed from 0.25 to 1.0 (100% Chance)
+    };
     };
 
     // Globals
@@ -1311,6 +1320,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
