@@ -305,6 +305,10 @@
         }
        
     </style>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
 </head>
 <body>
 
@@ -328,9 +332,19 @@
     <div id="ui-layer">
         <h1 id="main-title">Silly Goose Chase</h1>
 
-        <div id="start-screen" class="message-box active">
+       <div id="start-screen" class="message-box active">
             <p id="instruction-text">Tap repeatedly to fly!</p>
-            <p style="margin-top:0; font-size: 1.2rem; color: #555;">High Score: <span id="high-score-display">0</span></p>
+            
+            <div style="margin-bottom: 15px; font-size: 1.2rem; color: #555;">
+                Playing as: <strong id="current-username-display" style="color:#d32f2f;">Guest</strong>
+                <br>
+                <a href="#" onclick="changeUser()" style="font-size: 1rem; color: #000; text-decoration: underline;">(Switch User)</a>
+            </div>
+
+            <p style="margin-top:0; font-size: 1.2rem; color: #555;">
+                High Score: <span id="high-score-display">0</span>
+            </p>
+
             <button id="start-btn" onclick="startGame()">Start Flying</button>
         </div>
         
@@ -373,6 +387,101 @@
 </script>
 
 <script>
+
+    // ==========================================
+    // --- FIREBASE CONFIGURATION ---
+    // PASTE YOUR KEYS FROM PHASE 1 HERE
+    // ==========================================
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4eP_ypqzLq1KvKe8ffbdQJZTmh9iaKzM",
+    authDomain: "silly-goose-chase.firebaseapp.com",
+    projectId: "silly-goose-chase",
+    storageBucket: "silly-goose-chase.firebasestorage.app",
+    messagingSenderId: "178014526530",
+    appId: "1:178014526530:web:bef279b366275b7b1761db",
+    measurementId: "G-PFK9PNP593"
+  };
+
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- USERNAME & SCORE VARIABLES ---
+    let worldRecord = 0;
+    // Load saved username or default to "Guest"
+    let currentUser = localStorage.getItem('sillyGooseUsername') || "Guest";
+    // Load local high score for this user
+    let highScore = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
+
+    // --- FUNCTION 1: Update Name on Screen ---
+    function updateUsernameDisplay() {
+        const el = document.getElementById('current-username-display');
+        if (el) el.innerText = currentUser;
+        
+        // Also ensure high score text is correct
+        const scoreEl = document.getElementById('high-score-display');
+        const bestEl = document.getElementById('best-score-display');
+        if(scoreEl) scoreEl.innerText = highScore;
+        if(bestEl) bestEl.innerText = highScore;
+    }
+
+    // --- FUNCTION 2: Switch User Button ---
+    window.changeUser = function() {
+        const newName = prompt("Enter new player name:", currentUser);
+        if (newName && newName.trim().length > 0) {
+            currentUser = newName.trim();
+            localStorage.setItem('sillyGooseUsername', currentUser);
+            
+            // RESET Local High Score for the new person (Fresh Start)
+            highScore = 0; 
+            localStorage.setItem('sillyGooseHighScore', 0);
+            
+            updateUsernameDisplay();
+        }
+    };
+
+    // --- FUNCTION 3: Listen for World Record Updates ---
+    function fetchWorldRecord() {
+        db.collection("game_data").doc("world_record").onSnapshot((doc) => {
+            if (doc.exists) {
+                worldRecord = doc.data().value;
+                let holder = doc.data().player || "Anon";
+                
+                // Show "👑 50 (Steve)" on the game over screen
+                const display = document.getElementById('best-score-display');
+                if(display) display.innerText = `👑 ${worldRecord} (${holder})`;
+            }
+        });
+    }
+
+    // --- FUNCTION 4: Save New World Record ---
+    function trySaveWorldRecord(newScore) {
+        if (newScore > worldRecord) {
+            // Force "Guest" to pick a name if they break the record
+            if (currentUser === "Guest") {
+                const nameInput = prompt("WORLD RECORD BROKEN! Enter your name to save it:");
+                if (nameInput) {
+                    currentUser = nameInput.trim();
+                    localStorage.setItem('sillyGooseUsername', currentUser);
+                    updateUsernameDisplay();
+                }
+            }
+
+            // Save to Database
+            db.collection("game_data").doc("world_record").set({
+                value: newScore,
+                player: currentUser
+            });
+        }
+    }
+
+    // Start listening immediately
+    fetchWorldRecord();
+    window.addEventListener('load', updateUsernameDisplay);
+    
     // =========================================================================
     //  --- 1. ASSET CONFIGURATION ---
     //  Paste your strings/paths inside the quotes below.
@@ -1703,6 +1812,7 @@ document.getElementById('best-score-display').innerText = highScore;
 </script>
 </body>
 </html>
+
 
 
 
