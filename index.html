@@ -107,40 +107,43 @@
         
     #start-rev-img {
             position: absolute;
-            right: 0;
             
-            /* MATCHING THE GOOSE: Sink him into the floor */
-            bottom: -2vh; 
+            /* THE FIX: Pull him 10% past the edge to hide the gap */
+            /* If he is still too far left, change this to -15% or -20% */
+            right: -13%; 
             
-            /* MATCHING THE GOOSE: Set height, but remove strict width limits */
+            /* Height & Floor Anchor */
+            bottom: -14vh; 
             height: 85vh; 
+            
+            /* Size handling */
+        height: auto;
+        max-height: none;
             width: auto;
             max-width: none; 
-            
-            /* Keep him contained so he doesn't pixelate */
+            scale: 1.08;
             object-fit: contain;
             object-position: bottom right; 
             
             pointer-events: none;
             z-index: 1; 
             
-            /* Flip him */
-            transform: scaleX(-1); 
+            /* DOUBLE CHECK: Make sure this transform line is DELETED */
+            /* transform: scaleX(-1); */ 
         }
         
         #start-goose-img {
             position: absolute;
             left: 0;
-            
+            right: 1;
             /* Sink it slightly */
-            bottom: -2vh;
+            bottom: 5vh;
             
             /* Make it a bit bigger */
             height: 55vh; 
-            
             width: auto;
             max-width: none;
-            
+            scale: 1.3;
             object-fit: contain;
             object-position: bottom left; 
             
@@ -367,7 +370,7 @@
     // Left side image
     const START_SCREEN_GOOSE_SRC = `goose.png`; 
     // Right side image (Defaults to 'NewRevBigEyes...' if blank)
-    const START_SCREEN_REV_SRC = `rev.png`; 
+    const START_SCREEN_REV_SRC = `rev.png?v=2`; 
 
     // Audio Files (File paths or Base64)
     const AUDIO_FILES = {
@@ -1386,6 +1389,20 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
