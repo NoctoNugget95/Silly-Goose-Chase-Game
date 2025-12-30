@@ -1478,13 +1478,58 @@
     }
     
     // --- EVENTS & BOOT ---
-    document.getElementById('start-btn').addEventListener('click', startGame);
+   document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
     
     window.addEventListener('resize', resize);
     window.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') jump(); });
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, { passive: false });
     canvas.addEventListener('mousedown', (e) => { jump(); });
+
+    // ---------------------------------------------------------
+    // PASTE THE NEW PAUSE LOGIC HERE (Right before window.onload)
+    // ---------------------------------------------------------
+    
+    function togglePause() {
+        if (!isPlaying || isGameOver || isClashing) return; 
+        
+        isPaused = !isPaused;
+        
+        const overlay = document.getElementById('pause-overlay');
+        if (isPaused) {
+            overlay.classList.add('active');
+            if(AudioSys.ctx) AudioSys.ctx.suspend(); 
+        } else {
+            overlay.classList.remove('active');
+            if(AudioSys.ctx) AudioSys.ctx.resume(); 
+        }
+    }
+
+    // 1. Tab Key to Pause / Space to Resume
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Tab') {
+            e.preventDefault(); 
+            togglePause();
+        }
+        if (e.code === 'Space' && isPaused) {
+            togglePause();
+        }
+    });
+
+    // 2. Click to Resume
+    document.getElementById('pause-overlay').addEventListener('click', () => {
+        if (isPaused) togglePause();
+    });
+    
+    // 3. Mobile Tap to Resume
+    document.getElementById('pause-overlay').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (isPaused) togglePause();
+    }, {passive: false});
+
+    // ---------------------------------------------------------
+    // END OF NEW CODE
+    // ---------------------------------------------------------
 
    window.onload = function() {
         resize(); // Ensure canvas is ready
@@ -1506,6 +1551,7 @@
 </script>
 </body>
 </html>
+
 
 
 
