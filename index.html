@@ -182,38 +182,36 @@
     <p>This game is best played in Landscape mode!</p>
 </div>
 
-<canvas id="gameCanvas"></canvas>
+<div id="game-stage">
 
-<div id="score-display">Score: 0</div>
+    <canvas id="gameCanvas"></canvas>
 
-<div id="audio-controls">
-    <div id="mute-btn">🔊</div>
-    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5">
-</div>
+    <div id="score-display">Score: 0</div>
 
-<div id="ui-layer">
-    <!-- Main Title -->
-    <h1 id="main-title">Silly Goose Chase</h1>
+    <div id="audio-controls">
+        <div id="mute-btn">🔊</div>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5">
+    </div>
 
-    <!-- Start Screen UI -->
-    <div id="start-screen" class="message-box active">
-        <p id="instruction-text">Tap repeatedly to fly!</p>
-        <button id="start-btn" onclick="startGame()">Start Flying</button>
+    <div id="ui-layer">
+        <h1 id="main-title">Silly Goose Chase</h1>
+
+        <div id="start-screen" class="message-box active">
+            <p id="instruction-text">Tap repeatedly to fly!</p>
+            <button id="start-btn" onclick="startGame()">Start Flying</button>
+        </div>
+        
+        <img id="start-rev-img" alt="Rev">
+        <img id="start-goose-img" alt="Goose">
+        
+        <div id="game-over-screen" class="message-box">
+            <h1>Silly Goose!</h1>
+            <p>Your Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">Try Again</button>
+        </div>
     </div>
     
-    <!-- START SCREEN IMAGES (Static Config) -->
-    <!-- These images are independent of the canvas game loop -->
-    <img id="start-rev-img" alt="Rev">
-    <img id="start-goose-img" alt="Goose">
-    
-    <div id="game-over-screen" class="message-box">
-        <h1>Silly Goose!</h1>
-        <p>Your Score: <span id="final-score">0</span></p>
-        <button id="restart-btn">Try Again</button>
-    </div>
-</div>
-
-<div id="loading">Loading...</div>
+    <div id="loading">Loading...</div>
 
 <!-- FAILSAFE SCRIPT -->
 <script>
@@ -884,8 +882,14 @@
 
     // --- MAIN ---
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        // 1. Get the container element
+        const stage = document.getElementById('game-stage');
+        
+        // 2. Set canvas to match the container's size, not the window
+        canvas.width = stage.clientWidth;
+        canvas.height = stage.clientHeight;
+        
+        // 3. Reset player position if game hasn't started
         if (!isPlaying && !isClashing && player) {
             player.baseX = canvas.width * 0.30;
             player.x = player.baseX;
@@ -1086,7 +1090,7 @@
             if (secretMode.timer <= 0) {
                 secretMode.active = false;
                 AudioSys.tempo = 1.45; 
-                document.body.classList.remove('blueprint-mode');
+                document.getElementById('game-stage').classList.remove('blueprint-mode');
                 createParticle(player.x, player.y, 'jump');
                 player.x = canvas.width * 0.30;
                 
@@ -1123,7 +1127,7 @@
                 battery.active = false; 
                 AudioSys.playSound('powerup');
                 AudioSys.tempo = 1.6; 
-                document.body.classList.add('blueprint-mode');
+                document.getElementById('game-stage').classList.add('blueprint-mode');
                 player.x = canvas.width * 0.6;
                 for(let i=0; i<30; i++) createParticle(player.x + 25, player.y + 25, 'spark');
             }
@@ -1282,7 +1286,7 @@
         if(revImg) revImg.style.display = 'none';
         if(gooseImg) gooseImg.style.display = 'none';
         
-        document.body.classList.remove('blueprint-mode');
+       document.getElementById('game-stage').classList.remove('blueprint-mode');
         
         // 4. Reset Game State
         player.baseX = canvas.width * 0.30;
@@ -1362,6 +1366,7 @@
 </script>
 </body>
 </html>
+
 
 
 
