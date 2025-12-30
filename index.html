@@ -581,14 +581,32 @@
             osc.start(); osc.stop(this.ctx.currentTime + duration);
         },
 
-        playTrack: function(trackName) {
-            if (this.activeSource) { try{this.activeSource.stop();}catch(e){}; this.activeSource=null; }
+       playTrack: function(trackName) {
+            // Stop any old track first
+            if (this.activeSource) { 
+                try { this.activeSource.stop(); } catch(e){}
+                this.activeSource = null; 
+            }
+            
             this.currentTrack = trackName;
-            this.noteIndex = 0;
-            this.isPlaying = true;
+            this.isPlaying = true; // Mark as "trying to play"
             
             let bufferKey = trackName;
             if(trackName === 'start_screen') bufferKey = 'music_start';
+
+            // --- THE FIX: RETRY LOGIC ---
+            // If the sound file isn't loaded yet, wait 500ms and try again
+            if (!this.customBuffers[bufferKey]) {
+                console.log(`Audio '${bufferKey}' loading... waiting.`);
+                setTimeout(() => {
+                    // Only retry if we are still supposed to be playing this track
+                    if (this.isPlaying && this.currentTrack === trackName) {
+                        this.playTrack(trackName);
+                    }
+                }, 500);
+                return;
+            }
+            // -----------------------------
 
             if ((trackName === 'main' && this.customBuffers['main']) || 
                 (trackName === 'clash' && this.customBuffers['clash']) ||
@@ -596,6 +614,7 @@
                 
                 const buffer = this.customBuffers[bufferKey];
                 if (this.isMuted || !this.ctx) return;
+                
                 const source = this.ctx.createBufferSource();
                 source.buffer = buffer;
                 source.loop = true;
@@ -606,6 +625,8 @@
                 this.activeSource = source;
                 this.bgMusicGainNode = gain;
             } else {
+                // Synthesizer fallback if something goes really wrong
+                this.noteIndex = 0;
                 if (this.ctx) this.nextNoteTime = this.ctx.currentTime;
             }
         },
@@ -1389,6 +1410,7 @@
 </script>
 </body>
 </html>
+
 
 
 
