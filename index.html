@@ -981,17 +981,30 @@
         });
     }
 
-    function createObstacle() {
+    function createObstacle(overrideX) {
+        // 1. Logic to accept a custom position (e.g. 600px further back)
+        let x = (typeof overrideX === 'number') ? overrideX : canvas.width;
+
+        // 2. Your existing height math
         const minHeight = 50;
         const maxHeight = canvas.height - CONFIG.gapSize - minHeight;
         const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+
+        // 3. Create the obstacle (Using 'x' instead of 'canvas.width')
         obstacles.push({
-            x: canvas.width, topHeight: topHeight, bottomY: topHeight + CONFIG.gapSize,
-            width: 70, passed: false, colorIndex: Math.floor(Math.random() * 3)
+            x: x, 
+            topHeight: topHeight, 
+            bottomY: topHeight + CONFIG.gapSize,
+            width: 70, 
+            passed: false, 
+            colorIndex: Math.floor(Math.random() * 3)
         });
+
+        // 4. Your existing coin logic (Updated to spawn relative to 'x')
         if (Math.random() < CONFIG.coinChancePerGap) {
             const distanceToNext = CONFIG.spawnRate * CONFIG.gameSpeed;
-            const coinX = canvas.width + (distanceToNext / 2) + 35; 
+            // We use 'x' here so the coin stays with the pipe, even if it's far away
+            const coinX = x + (distanceToNext / 2) + 35; 
             const gapCenterY = topHeight + (CONFIG.gapSize / 2);
             const coinY = gapCenterY + (Math.random() - 0.5) * 100;
             createCoin(coinX, coinY);
@@ -1024,7 +1037,7 @@
         
         // 3. Reset player position if game hasn't started
         if (!isPlaying && !isClashing && player) {
-            player.baseX = canvas.width * 0.30;
+            player.baseX = canvas.width * 0.40;
             player.x = player.baseX;
             player.y = canvas.height / 2;
         }
@@ -1379,13 +1392,11 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
- function startGame() {
-        // 1. STOP DOUBLE CLICKS: If game is running, ignore clicks
+ // --- UPDATED START GAME (Paste this over your existing startGame) ---
+    function startGame() {
         if (isPlaying || isClashing) return; 
 
-        console.log("Start Button Clicked!"); 
-
-        // 2. Audio Wake-up
+        // 1. Audio Wake-up
         if (typeof AudioSys !== 'undefined') {
             AudioSys.init();
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
@@ -1395,33 +1406,26 @@
             AudioSys.tempo = 1.45;
         }
 
-        // 3. UI Hiding
+        // 2. UI Cleanup
         const startScreen = document.getElementById('start-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const mainTitle = document.getElementById('main-title');
+        const revImg = document.getElementById('start-rev-img');
+        const gooseImg = document.getElementById('start-goose-img');
         
-        if (startScreen) {
-            startScreen.classList.remove('active');
-            startScreen.style.display = 'none'; 
-        }
-        
+        if (startScreen) startScreen.classList.remove('active');
         if (gameOverScreen) {
             gameOverScreen.classList.remove('active');
             gameOverScreen.classList.remove('spin-in'); 
             gameOverScreen.style.display = 'none';
         }
-        
         if (mainTitle) mainTitle.classList.add('hidden');
+        if (revImg) revImg.style.display = 'none';
+        if (gooseImg) gooseImg.style.display = 'none';
         
-        // Hide Start Characters
-        const revImg = document.getElementById('start-rev-img');
-        const gooseImg = document.getElementById('start-goose-img');
-        if(revImg) revImg.style.display = 'none';
-        if(gooseImg) gooseImg.style.display = 'none';
+        document.getElementById('game-stage').classList.remove('blueprint-mode');
         
-       document.getElementById('game-stage').classList.remove('blueprint-mode');
-        
-        // 4. Reset Game State
+        // 3. Reset State
         player.baseX = canvas.width * 0.30;
         player.x = player.baseX;
         player.y = canvas.height / 2;
@@ -1447,9 +1451,9 @@
         secretMode.timer = 0;
         battery.active = false;
         
-        // 5. START FREEZE & IMMEDIATE OBSTACLE
+        // 4. THE FIX: Spawn first obstacle far away!
         startFreeze = 60;   
-        createObstacle();   
+        createObstacle(canvas.width + 600); // <--- Pushes it 600px back
         
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
@@ -1459,6 +1463,49 @@
         
         loop();
     }
+
+    // --- UPDATED WINDOW ONLOAD (Paste this at the bottom) ---
+    window.onload = function() {
+        resize(); 
+        document.getElementById('loading').style.display = 'none';
+        
+        // 1. Setup Audio Controls (Slider & Mute)
+        const volSlider = document.getElementById('volume-slider');
+        const muteBtn = document.getElementById('mute-btn');
+        
+        if(volSlider) {
+            volSlider.addEventListener('input', (e) => {
+                e.stopPropagation();
+                if(AudioSys) AudioSys.setVolume(e.target.value);
+            });
+            // These prevent the game from jumping when you click the slider
+            volSlider.addEventListener('mousedown', (e) => e.stopPropagation());
+            volSlider.addEventListener('click', (e) => e.stopPropagation());
+            volSlider.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+
+        if(muteBtn) {
+            muteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(AudioSys) {
+                    AudioSys.toggleMute();
+                    muteBtn.innerText = AudioSys.isMuted ? '🔇' : '🔊';
+                }
+            });
+            muteBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+            muteBtn.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+
+        // 2. Start Screen Music Listener (One-time click)
+        window.addEventListener('click', function musicStarter() {
+            if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
+            
+            if (!AudioSys.isPlaying && AUDIO_FILES.music_start) {
+                AudioSys.playTrack('start_screen');
+            }
+            window.removeEventListener('click', musicStarter);
+        }, {once:true});
+    };
     
     function loop() {
         if (isPaused) {
@@ -1581,6 +1628,7 @@
 </script>
 </body>
 </html>
+
 
 
 
