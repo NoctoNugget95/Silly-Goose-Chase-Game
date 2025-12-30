@@ -335,28 +335,50 @@
 
        <div id="start-screen" class="message-box active">
             
-         <div onclick="changeUser()" style="
-                background: #bbdefb; 
-                border: 4px solid #1565c0; 
-                border-radius: 15px; 
-                padding: 15px 25px; 
+       <div onclick="changeUser()" style="
+                background: #e3f2fd; /* Softer, lighter sky blue (easier on eyes) */
+                border: 5px solid #0d47a1; /* Deep Navy border */
+                border-radius: 25px; 
+                padding: 15px; 
                 margin-bottom: 25px; 
                 cursor: pointer;
-                box-shadow: 4px 4px 0px #0d47a1; 
+                box-shadow: 6px 6px 0px #0a2472; /* Darker navy shadow */
                 transition: transform 0.1s;
-                /* FIX: Changed base text color to Deep Navy for better mesh */
-                color: #0d47a1; 
+                text-align: center;
+                font-family: 'Barriecito', cursive; 
             ">
-                <div style="font-size: 1rem; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">
-                    Pick a name!!!
+                <div style="
+                    color: #0d47a1; /* Deep Navy (High contrast) */
+                    font-size: 1.6rem; 
+                    margin-bottom: 5px;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                ">
+                    PICK A NAME!!!
                 </div>
                 
-                <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">
-                    <span id="current-username-display" style="color: #222; border-bottom: 2px dotted #1565c0;">Guest</span> <span style="font-size: 1.5rem; vertical-align: middle; color: #1565c0;">✎</span>
+                <div style="
+                    font-size: 3.5rem; 
+                    color: #1a1a1a; /* Soft Black (Best readability) */
+                    line-height: 1.0;
+                    text-shadow: 3px 3px 0px #fff; 
+                ">
+                    <span id="current-username-display">Guest</span> 
+                    <span style="font-size: 2rem; color: #1976d2; vertical-align: middle;">✎</span>
                 </div>
 
-                <div style="font-size: 0.9rem; font-weight: bold; opacity: 0.9;">
-                    Show the world who's top goose!
+                <div style="
+                    border-bottom: 4px dotted #1976d2; 
+                    width: 70%; 
+                    margin: 10px auto 10px auto; 
+                    opacity: 0.6;
+                "></div>
+
+                <div style="
+                    color: #0d47a1; /* Deep Navy */
+                    font-size: 1.2rem; 
+                ">
+                    Show <span style="color:#000">the world</span> who's <span style="color:#000">top goose!</span>
                 </div>
             </div>
            
@@ -1286,6 +1308,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
