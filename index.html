@@ -416,7 +416,22 @@
     // Canvas Globals
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+
+    // --- START OF COPY ---
+function resizeGame() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Optional: Keep pixel art sharp
+    ctx.imageSmoothingEnabled = false; 
+}
+
+// 1. Resize immediately so the canvas is the right size before the game starts
+resizeGame();
+
+// 2. Resize again if the user stretches the browser window
+window.addEventListener('resize', resizeGame);
     
+// --- END OF COPY ---
     // State Globals
     let frames = 0;
     let score = 0;
@@ -1647,6 +1662,7 @@
 </script>
 </body>
 </html>
+
 
 
 
