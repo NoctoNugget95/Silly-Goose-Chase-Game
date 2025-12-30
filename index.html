@@ -1029,46 +1029,48 @@
         coins.forEach(c => drawCoin(c, frames));
         
         if (isClashing) drawClashClouds(0, clashCloudParticles);
-        
-        if (secretMode.active) {
+
+            if (secretMode.active) {
             ctx.save();
             const jitterX = (Math.random() - 0.5) * 15;
             const jitterY = (Math.random() - 0.5) * 15;
-            let drawH = canvas.height;
-            let drawW = 100; 
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                const aspect = playerImg.width / playerImg.height;
+            
+            // 1. Setup Dimensions (85% of Screen Height)
+            let drawH = canvas.height * 0.85;
+            let drawW = 300; 
+            
+            // Calculate width based on image aspect ratio
+            if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) {
+                const aspect = secretPlayerImg.width / secretPlayerImg.height;
                 drawW = drawH * aspect;
             }
-            let imgX = -drawW * 0.3 + jitterX; 
-            let imgY = 0 + jitterY; 
+            
+            // 2. Alignment Logic
+            let imgY = (canvas.height - drawH) / 2 + jitterY;
+            let imgX = -drawW * 0.1 + jitterX; 
 
-            ctx.shadowBlur = 40 + Math.random() * 40; ctx.shadowColor = "#00ffff"; 
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                ctx.drawImage(playerImg, imgX, imgY, drawW, drawH);
-                ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = 0.5;
-                ctx.drawImage(playerImg, imgX + 10, imgY + 5, drawW, drawH);
-                ctx.drawImage(playerImg, imgX - 10, imgY - 5, drawW, drawH);
-                ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1.0;
-                
-                const eyeY = imgY + drawH * 0.42; const eyeSize = drawW * 0.12; 
-                ctx.shadowBlur = 50; ctx.shadowColor = "#00ffff"; ctx.fillStyle = "#e0ffff"; 
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.48, eyeY, eyeSize, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.70, eyeY, eyeSize, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "#00ffff";
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.48, eyeY, eyeSize * 0.5, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.70, eyeY, eyeSize * 0.5, 0, Math.PI*2); ctx.fill();
+            // 3. Draw the Image
+            if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) {
+                ctx.shadowBlur = 40 + Math.random() * 40; 
+                ctx.shadowColor = "#00ffff"; 
+                ctx.drawImage(secretPlayerImg, imgX, imgY, drawW, drawH);
             } else {
-                ctx.fillStyle = "#29b6f6"; ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
+                ctx.fillStyle = "#29b6f6"; 
+                ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
             }
             
+            // Background lightning
             if (frames % 8 < 4) {
                 drawLightning(canvas.width * 0.1, canvas.height * 0.5);
                 drawLightning(canvas.width * 0.2, canvas.height * 0.2);
             }
             ctx.restore();
+            
+            // Draw the flying goose
             drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
-        } else {
+        }
+        
+       else {
             drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
             ctx.save();
             ctx.translate(player.x + player.width/2, player.y + player.height/2);
@@ -1420,6 +1422,7 @@
 </script>
 </body>
 </html>
+
 
 
 
