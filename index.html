@@ -366,6 +366,8 @@
     // In-Game Player Character (The one you fly) - SVG Code or Image Path
     const PERMANENT_PLAYER_SVG = `sprite.png`; 
 
+    // NEW: Secret Level Character (The one you just made)
+    const SECRET_PLAYER_SRC = `secret_player.png`;
     // Start Screen Images (File paths or Base64)
     // Left side image
     const START_SCREEN_GOOSE_SRC = `goose.png`; 
@@ -395,7 +397,7 @@
         doodleWobbleSpeed: 0.1,
         clashDuration: 180,
         batterySpawnChance: 0.005, 
-        coinChancePerGap: 0.1
+        coinChancePerGap: 0.25
     };
 
     // Canvas Globals
@@ -405,6 +407,7 @@
     // State Globals
     let frames = 0;
     let score = 0;
+    let startFreeze = 0;
     let isGameOver = false;
     let isPlaying = false;
     let isClashing = false;
@@ -437,20 +440,24 @@
         // Use the fallback blue box if it fails, but don't crash
         playerImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PC9zdmc+";
     };
+
     
     // Set the source (Trim removes any accidental spaces)
     if (PERMANENT_PLAYER_SVG) {
         playerImg.src = PERMANENT_PLAYER_SVG.trim();
     }
-
-    // 2. Start Screen Characters
+// 2. Secret Level Rev
+    const secretPlayerImg = new Image();
+    if (SECRET_PLAYER_SRC) secretPlayerImg.src = SECRET_PLAYER_SRC.trim();
+    
+    // 3. Start Screen Characters
     const startRevImg = new Image();
     if (START_SCREEN_REV_SRC) startRevImg.src = START_SCREEN_REV_SRC.trim();
 
     const startGooseImg = new Image();
     if (START_SCREEN_GOOSE_SRC) startGooseImg.src = START_SCREEN_GOOSE_SRC.trim();
 
-    // 3. HTML Overlay Elements (Keeps the start screen working)
+    // 4. HTML Overlay Elements (Keeps the start screen working)
     const revImg = document.getElementById('start-rev-img');
     const gooseImg = document.getElementById('start-goose-img');
     
@@ -467,7 +474,7 @@
         }
     }
 
-    // 4. Audio Setup
+    // 5. Audio Setup
     const custom_audio = {}; 
 
     for (let key in AUDIO_FILES) {
@@ -477,7 +484,7 @@
         }
     }
 
-    // --- 4. AUDIO ENGINE ---
+    // --- 6. AUDIO ENGINE ---
     const AudioSys = {
         ctx: null, isPlaying: false, isMuted: false, tempo: 1.45,
         masterVolume: 0.5, customBuffers: {}, activeSource: null, bgMusicGainNode: null,
@@ -564,7 +571,7 @@
         setVolume: function(val) {
             this.masterVolume = parseFloat(val);
             if (this.masterVolume > 0 && this.isMuted) this.toggleMute();
-            if (this.bgMusicGainNode) this.bgMusicGainNode.gain.setValueAtTime(0.4 * this.masterVolume, this.ctx.currentTime);
+            if (this.bgMusicGainNode) this.bgMusicGainNode.gain.setValueAtTime(0.1 * this.masterVolume, this.ctx.currentTime);
         },
 
         playTone: function(freq, duration, type = 'triangle', vol = 0.1) {
@@ -581,31 +588,56 @@
             osc.start(); osc.stop(this.ctx.currentTime + duration);
         },
 
-        playTrack: function(trackName) {
-            if (this.activeSource) { try{this.activeSource.stop();}catch(e){}; this.activeSource=null; }
+      playTrack: function(trackName) {
+            // 1. Stop any old track first
+            if (this.activeSource) { 
+                try { this.activeSource.stop(); } catch(e){}
+                this.activeSource = null; 
+            }
+            
             this.currentTrack = trackName;
-            this.noteIndex = 0;
-            this.isPlaying = true;
+            this.isPlaying = true; // Mark as "trying to play"
             
             let bufferKey = trackName;
             if(trackName === 'start_screen') bufferKey = 'music_start';
 
+            // --- THE FIX ---
+            // If the sound file isn't loaded yet, pause the "playing" flag so fallback doesn't trigger
+            if (!this.customBuffers[bufferKey]) {
+                console.log(`Audio '${bufferKey}' loading... waiting.`);
+                
+                this.isPlaying = false; // <--- THIS STOPS THE BEEPS
+
+                setTimeout(() => {
+                    // Only retry if we are still on the same screen
+                    if (this.currentTrack === trackName) {
+                        this.playTrack(trackName);
+                    }
+                }, 100); 
+                return;
+            }
+            // ----------------
+
+            // 2. Play the file if it exists
             if ((trackName === 'main' && this.customBuffers['main']) || 
                 (trackName === 'clash' && this.customBuffers['clash']) ||
                 (trackName === 'start_screen' && this.customBuffers['music_start'])) {
                 
                 const buffer = this.customBuffers[bufferKey];
                 if (this.isMuted || !this.ctx) return;
+                
                 const source = this.ctx.createBufferSource();
                 source.buffer = buffer;
                 source.loop = true;
                 const gain = this.ctx.createGain();
-                gain.gain.value = 0.4 * this.masterVolume;
+                gain.gain.value = 0.1 * this.masterVolume;
                 source.connect(gain); gain.connect(this.ctx.destination);
                 source.start();
                 this.activeSource = source;
                 this.bgMusicGainNode = gain;
             } else {
+                // 3. Synthesizer fallback (Only runs if file is totally broken/missing)
+                this.noteIndex = 0;
                 if (this.ctx) this.nextNoteTime = this.ctx.currentTime;
             }
         },
@@ -643,29 +675,42 @@
             }
         },
 
-        playSound: function(name) {
+      playSound: function(name) {
             if (this.isMuted || !this.ctx) return;
             
             let bufferKey = name;
+            // 1. Randomize coin sound if available
             if (name === 'coin') {
                 if (this.customBuffers['coin1'] && this.customBuffers['coin2']) 
                     bufferKey = Math.random() > 0.5 ? 'coin1' : 'coin2';
                 else if (this.customBuffers['coin1']) bufferKey = 'coin1';
             }
 
+            // 2. Play the loaded file
             if (this.customBuffers[bufferKey]) {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.customBuffers[bufferKey];
                 const gain = this.ctx.createGain();
-                gain.gain.value = 1.0 * this.masterVolume;
+                
+                // --- VOLUME BOOST FOR COINS ---
+                let vol = 1.0; // Normal volume for jumps/powerups
+                if (name === 'coin') vol = 1.8; // Boost coins by 80%
+                
+                gain.gain.value = vol * this.masterVolume;
+                // ------------------------------
+
                 source.connect(gain); gain.connect(this.ctx.destination);
                 source.start();
                 return;
             }
 
-            // Fallbacks
+            // 3. Fallbacks (Synthesized beeps if files missing)
             if (name === 'jump') this.playTone(300, 0.15, 'triangle', 0.1);
-            else if (name === 'coin') { this.playTone(1200, 0.1, 'sine', 0.1); setTimeout(()=>this.playTone(1800, 0.15, 'sine', 0.1), 80); }
+            else if (name === 'coin') { 
+                // Boosted fallback volume too (0.1 -> 0.3)
+                this.playTone(1200, 0.1, 'sine', 0.3); 
+                setTimeout(()=>this.playTone(1800, 0.15, 'sine', 0.3), 80); 
+            }
             else if (name === 'powerup') { 
                 this.playTone(this.N.A4, 0.1, 'sawtooth', 0.1); 
                 setTimeout(()=>this.playTone(this.N.Cs5, 0.1, 'sawtooth', 0.1), 80);
@@ -972,6 +1017,10 @@
 
     function jump() {
         if (!isPlaying || isGameOver || isClashing) return;
+        
+        // NEW: If they tap during the freeze, start the game immediately!
+        if (startFreeze > 0) startFreeze = 0; 
+
         player.velocity = CONFIG.jumpStrength;
         createParticle(player.x, player.y + player.height, 'jump');
         if (frames % 10 === 0) AudioSys.playSound('jump');
@@ -1002,46 +1051,48 @@
         coins.forEach(c => drawCoin(c, frames));
         
         if (isClashing) drawClashClouds(0, clashCloudParticles);
-        
-        if (secretMode.active) {
+
+            if (secretMode.active) {
             ctx.save();
             const jitterX = (Math.random() - 0.5) * 15;
             const jitterY = (Math.random() - 0.5) * 15;
-            let drawH = canvas.height;
-            let drawW = 100; 
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                const aspect = playerImg.width / playerImg.height;
+            
+            // 1. Setup Dimensions (85% of Screen Height)
+            let drawH = canvas.height * 0.85;
+            let drawW = 300; 
+            
+            // Calculate width based on image aspect ratio
+            if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) {
+                const aspect = secretPlayerImg.width / secretPlayerImg.height;
                 drawW = drawH * aspect;
             }
-            let imgX = -drawW * 0.3 + jitterX; 
-            let imgY = 0 + jitterY; 
+            
+            // 2. Alignment Logic
+            let imgY = (canvas.height - drawH) / 2 + jitterY;
+            let imgX = -drawW * 0.1 + jitterX; 
 
-            ctx.shadowBlur = 40 + Math.random() * 40; ctx.shadowColor = "#00ffff"; 
-            if (playerImg.complete && playerImg.naturalWidth > 0) {
-                ctx.drawImage(playerImg, imgX, imgY, drawW, drawH);
-                ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = 0.5;
-                ctx.drawImage(playerImg, imgX + 10, imgY + 5, drawW, drawH);
-                ctx.drawImage(playerImg, imgX - 10, imgY - 5, drawW, drawH);
-                ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1.0;
-                
-                const eyeY = imgY + drawH * 0.42; const eyeSize = drawW * 0.12; 
-                ctx.shadowBlur = 50; ctx.shadowColor = "#00ffff"; ctx.fillStyle = "#e0ffff"; 
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.48, eyeY, eyeSize, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.70, eyeY, eyeSize, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "#00ffff";
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.48, eyeY, eyeSize * 0.5, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(imgX + drawW * 0.70, eyeY, eyeSize * 0.5, 0, Math.PI*2); ctx.fill();
+            // 3. Draw the Image
+            if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) {
+                ctx.shadowBlur = 40 + Math.random() * 40; 
+                ctx.shadowColor = "#00ffff"; 
+                ctx.drawImage(secretPlayerImg, imgX, imgY, drawW, drawH);
             } else {
-                ctx.fillStyle = "#29b6f6"; ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
+                ctx.fillStyle = "#29b6f6"; 
+                ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
             }
             
+            // Background lightning
             if (frames % 8 < 4) {
                 drawLightning(canvas.width * 0.1, canvas.height * 0.5);
                 drawLightning(canvas.width * 0.2, canvas.height * 0.2);
             }
             ctx.restore();
+            
+            // Draw the flying goose
             drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
-        } else {
+        }
+        
+       else {
             drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
             ctx.save();
             ctx.translate(player.x + player.width/2, player.y + player.height/2);
@@ -1074,10 +1125,11 @@
         }
     }
 
-    function update() {
+   function update() {
         frames++;
         doodleTime += CONFIG.doodleWobbleSpeed;
         
+        // 1. Background Elements
         for (let i = bgElements.length - 1; i >= 0; i--) {
             let el = bgElements[i];
             el.x -= CONFIG.gameSpeed * el.speedFactor;
@@ -1089,6 +1141,7 @@
 
         AudioSys.update();
 
+        // 2. Clash Logic
         if (isClashing) { 
             clashTimer--;
             
@@ -1135,14 +1188,14 @@
                 isClashing = false;
                 document.getElementById('final-score').innerText = score;
                 
-                // NEW: Show Game Over screen using the class
                 const endScreen = document.getElementById('game-over-screen');
-                endScreen.classList.add('active'); // Add class to show it
+                endScreen.classList.add('active'); 
                 endScreen.classList.add('spin-in');
             }
             return; 
         }
 
+        // 3. Secret Mode Logic (With Coin Cleanup)
         if (secretMode.active) {
             secretMode.timer--;
             CONFIG.gameSpeed = 8; 
@@ -1150,24 +1203,34 @@
                 score++;
                 document.getElementById('score-display').innerText = `Score: ${score}`;
             }
+            
+            // TIMER ENDS
             if (secretMode.timer <= 0) {
                 secretMode.active = false;
                 AudioSys.tempo = 1.45; 
                 document.body.classList.remove('blueprint-mode');
                 createParticle(player.x, player.y, 'jump');
                 player.x = canvas.width * 0.30;
+                
+                // CLEANUP: Wipe obstacles AND coins
                 obstacles = obstacles.filter(obs => obs.x > canvas.width * 0.8);
+                coins = []; 
+                
                 CONFIG.gameSpeed = 3.2;
             }
-            if (frames % 40 === 0) {
+
+            // COIN EXPLOSION (Every 20 frames)
+            if (frames % 20 === 0) {
                  createCoin(canvas.width + 100, Math.random() * canvas.height);
             }
         } else {
+            // Normal Mode Battery Spawn
             if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) {
                 spawnBattery();
             }
         }
 
+        // 4. Battery Movement
         if (battery.active) {
             battery.x -= CONFIG.gameSpeed;
             battery.wobble = Math.sin(frames * 0.1) * 5;
@@ -1189,10 +1252,18 @@
             if (battery.x < -100) battery.active = false;
         }
 
-        player.velocity += CONFIG.gravity;
+        // 5. Player Physics (With Start Freeze)
+        if (startFreeze > 0) {
+            startFreeze--; 
+            player.velocity = 0; // Hover
+        } else {
+            player.velocity += CONFIG.gravity; // Fall
+        }
+        
         player.y += player.velocity;
         player.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (player.velocity * 0.1)));
 
+        // Floor / Ceiling Collision
         if (player.y + player.height > canvas.height || player.y < 0) {
             if (!secretMode.active) {
                 AudioSys.playTrack('clash');
@@ -1203,12 +1274,16 @@
             }
         }
 
+        // 6. Obstacle Spawning
         if (frames % CONFIG.spawnRate === 0) createObstacle();
 
+        // 7. Obstacle Logic
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i];
             obs.x -= CONFIG.gameSpeed;
             const padding = 10; 
+            
+            // Collision
             if (
                 player.x + padding < obs.x + obs.width &&
                 player.x + player.width - padding > obs.x &&
@@ -1223,15 +1298,24 @@
                 }
             }
 
-            if (obs.x + obs.width < player.x && !obs.passed) {
+           // Scoring (With Snappy Arcade Ding)
+            // Changed logic: Triggers as soon as the pipe clears the bird's beak!
+            if (obs.x + obs.width < player.x + player.width + 10 && !obs.passed) {
                 score++;
                 obs.passed = true;
+                
+                // ARCADE DING
+                if (typeof AudioSys !== 'undefined') {
+                    AudioSys.playTone(1200, 0.1, 'sine', 0.6);
+                }
+                
                 document.getElementById('score-display').innerText = `Score: ${score}`;
                 if (!secretMode.active && score % 5 === 0) CONFIG.gameSpeed += 0.2;
             }
             if (obs.x + obs.width < -100) obstacles.splice(i, 1);
         }
 
+        // 8. Coin Logic
         for (let i = coins.length - 1; i >= 0; i--) {
             let c = coins[i];
             c.x -= CONFIG.gameSpeed;
@@ -1261,6 +1345,7 @@
             if (c.x < -50) coins.splice(i, 1);
         }
 
+        // 9. Floating Text & Particles
         for (let i = scoreFloater.length - 1; i >= 0; i--) {
             let f = scoreFloater[i];
             f.y += f.vy;
@@ -1274,14 +1359,18 @@
             if (p.life <= 0) particles.splice(i, 1);
         }
 
+        // 10. Goose Follow Logic
         goose.x += (goose.targetX - goose.x) * 0.05;
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
-  function startGame() {
+ function startGame() {
+        // 1. STOP DOUBLE CLICKS: If game is running, ignore clicks
+        if (isPlaying || isClashing) return; 
+
         console.log("Start Button Clicked!"); 
 
-        // 1. Audio Wake-up
+        // 2. Audio Wake-up
         if (typeof AudioSys !== 'undefined') {
             AudioSys.init();
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) {
@@ -1291,23 +1380,25 @@
             AudioSys.tempo = 1.45;
         }
 
-        // 2. FORCE HIDE THE UI
+        // 3. UI Hiding
         const startScreen = document.getElementById('start-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const mainTitle = document.getElementById('main-title');
         
-        // Remove class AND force style to none
         if (startScreen) {
             startScreen.classList.remove('active');
             startScreen.style.display = 'none'; 
         }
+        
         if (gameOverScreen) {
             gameOverScreen.classList.remove('active');
+            gameOverScreen.classList.remove('spin-in'); 
             gameOverScreen.style.display = 'none';
         }
+        
         if (mainTitle) mainTitle.classList.add('hidden');
         
-        // 3. Hide Characters
+        // Hide Start Characters
         const revImg = document.getElementById('start-rev-img');
         const gooseImg = document.getElementById('start-goose-img');
         if(revImg) revImg.style.display = 'none';
@@ -1340,6 +1431,10 @@
         secretMode.active = false;
         secretMode.timer = 0;
         battery.active = false;
+        
+        // 5. START FREEZE & IMMEDIATE OBSTACLE
+        startFreeze = 60;   
+        createObstacle();   
         
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
@@ -1389,6 +1484,17 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
