@@ -451,41 +451,31 @@
 
    // --- FUNCTION 2: Save Score (Robust Version) ---
     function trySaveScore(newScore) {
-        // 1. Always update LOCAL High Score immediately
+        // 1. Always update LOCAL High Score immediately (for your phone's memory)
         if (newScore > highScore) {
             highScore = newScore;
             localStorage.setItem('sillyGooseHighScore', highScore);
-            
-            // FIX A: Force the screen to update "Your Best" RIGHT NOW
             updateUserDisplay();
         }
 
-        // 2. CHECK NAME (Before Database Check)
-        // If you are Guest and got a high score, we save your name locally first.
-        // This ensures your name is remembered even if the internet is glitchy.
-        if (newScore >= highScore && currentUser === "Guest") {
-            const name = prompt("New Personal Best! Enter your name:");
-            if (name && name.trim().length > 0) {
-                currentUser = name.trim();
-                localStorage.setItem('sillyGooseUsername', currentUser);
-                updateUserDisplay();
-            }
-        }
-
-        // 3. CLOUD SAVE (Only runs if we have a name and internet)
+        // 2. CLOUD SAVE
+        // We removed the "prompt" logic completely.
+        // Now, we ONLY save to the cloud if the user is NOT "Guest".
         if (db && currentUser !== "Guest") {
+            // If they have set a real name, save the score silently
             db.collection("leaderboard").doc(currentUser).set({
                 name: currentUser, 
-                score: newScore, // We save the current run's score
+                score: newScore, 
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
-                console.log("Score saved silently to cloud.");
-                fetchLeaderboard(); // Refresh the board
+                console.log("Score saved to leaderboard.");
+                fetchLeaderboard(); 
             })
-            .catch((err) => console.error("Cloud save failed (Local save is safe)", err));
+            .catch((err) => console.error("Cloud save failed", err));
         }
     }
+    
     function updateUserDisplay() {
         const el = document.getElementById('current-username-display');
         if (el) el.innerText = currentUser;
@@ -1277,6 +1267,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
