@@ -1639,6 +1639,12 @@ document.getElementById('best-score-display').innerText = highScore;
     // ---------------------------------------------------------
 
   window.onload = function() {
+      // Update high score text immediately on page load
+      if(typeof highScore !== 'undefined') {
+        document.getElementById('high-score-display').innerText = highScore;
+        document.getElementById('best-score-display').innerText = highScore;
+    }
+      // -----------------
         resize(); 
         document.getElementById('loading').style.display = 'none';
         
@@ -1697,6 +1703,7 @@ document.getElementById('best-score-display').innerText = highScore;
 </script>
 </body>
 </html>
+
 
 
 
