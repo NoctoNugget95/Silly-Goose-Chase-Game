@@ -1065,7 +1065,7 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
-   function draw() {
+function draw() {
         // --- SECTION 1: CLEAR & BACKGROUNDS ---
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -1173,31 +1173,52 @@
         particles.forEach(p => { 
             ctx.fillStyle = p.color; 
             ctx.beginPath(); 
-            ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2);
+            ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2); 
+            ctx.fill(); 
+        });
 
+
+        // --- SECTION 7: UI OVERLAYS ---
+        // Floating +5 or +100 text
+        scoreFloater.forEach(f => drawFloater(f));
+        
+        // "SUPERCHARGE" Text
+        if (secretMode.active) { 
+            ctx.font = "bold 40px 'Comic Sans MS'"; 
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`; 
+            ctx.textAlign = "center"; 
+            ctx.fillText("SUPERCHARGE!", canvas.width/2, 100); 
+        }
+    }
+    
    function loop() {
+        // 1. Only run logic if NOT paused
         if (!isPaused) {
+            
+            // 2. Safety Wrap: Prevents the game from freezing if an error occurs
             try {
-                // Try to run the game frame
-                if (isPlaying || isClashing) { update(); draw(); }
-                else if (isGameOver) draw();
-                
+                if (isPlaying || isClashing) { 
+                    update(); 
+                    draw(); 
+                }
+                else if (isGameOver) {
+                    draw();
+                }
             } catch (error) {
-                // IF IT CRASHES:
-                console.error("💥 Game Loop Error:", error);
+                // 3. Emergency Recovery
+                // If the game crashes (e.g. Secret Mode math error), log it and recover.
+                console.error("Game Loop Error:", error);
                 
-                // 1. If we are in Secret Mode, it's likely the culprit. Turn it off.
                 if (secretMode.active) {
-                    console.warn("⚠️ Secret Mode crashed. Disabling it to save the game.");
+                    console.warn("Disabling Secret Mode to save the game.");
                     secretMode.active = false;
                     document.getElementById('game-stage').classList.remove('blueprint-mode');
-                    CONFIG.gameSpeed = 3.5; // Reset speed
+                    CONFIG.gameSpeed = 3.5; 
                 }
-                
-                // 2. If it wasn't Secret Mode, try to just skip this bad frame.
             }
         }
-        // Keep the heart beating no matter what!
+        
+        // 4. The Heartbeat: This MUST happen every frame, or the game stops forever.
         requestAnimationFrame(loop);
     }
 
