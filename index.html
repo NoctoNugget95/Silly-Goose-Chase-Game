@@ -1111,20 +1111,41 @@
             if (c.x < -50) coins.splice(i, 1);
         }
         
-      // 7. Particles (Cleanup Fix)
-        // We iterate BACKWARDS so we can remove items without breaking the loop
+      // 7. CLEANUP: Particles (Sparks)
+        // INCLUDES FIX: Backwards loop + splice to stop "Slow Game" lag
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
-            p.x += p.vx; 
+            p.x += p.vx;
             p.y += p.vy;
-            p.life--; // Reduce life
-            
-            // FIX: Delete the particle if it is dead!
-            // This stops the array from growing to infinity and lagging the game.
-            if (p.life <= 0) {
-                particles.splice(i, 1);
+            p.life--;
+            if (p.life <= 0) particles.splice(i, 1);
+        }
+
+        // 8. CLEANUP: Floating Text (+5, +20)
+        // INCLUDES FIX: Removes text after it fades so memory doesn't fill up
+        for (let i = scoreFloater.length - 1; i >= 0; i--) {
+            let f = scoreFloater[i];
+            f.y += f.vy;
+            f.life--;
+            if (f.life <= 0) scoreFloater.splice(i, 1);
+        }
+        
+        // 9. CLEANUP: Dust Clouds (if any exist)
+        // INCLUDES FIX: Removes dust clouds so they don't drag down performance
+        if (clashCloudParticles.length > 0) {
+             for (let i = clashCloudParticles.length - 1; i >= 0; i--) {
+                clashCloudParticles[i].life--;
+                if (clashCloudParticles[i].life <= 0) clashCloudParticles.splice(i, 1);
             }
         }
+
+        // 10. Background Parallax
+        // INCLUDES FIX: Speeds up background during Secret Mode
+        bgElements.forEach(el => {
+            el.x -= el.speed * (secretMode.active ? 2 : 1);
+            if (el.x < -50) el.x = canvas.width + 50;
+        });
+    }
 
 function draw() {
         // --- SECTION 1: CLEAR & BACKGROUNDS ---
@@ -1326,6 +1347,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
