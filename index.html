@@ -397,7 +397,7 @@
         doodleWobbleSpeed: 0.1,
         clashDuration: 180,
         batterySpawnChance: 0.005, 
-        coinChancePerGap: 0.1
+        coinChancePerGap: 0.25
     };
 
     // Canvas Globals
@@ -1194,27 +1194,37 @@
             return; 
         }
 
-        if (secretMode.active) {
+       if (secretMode.active) {
             secretMode.timer--;
             CONFIG.gameSpeed = 8; 
             if (frames % 10 === 0) {
                 score++;
                 document.getElementById('score-display').innerText = `Score: ${score}`;
             }
+            
+            // --- TIMER ENDS ---
             if (secretMode.timer <= 0) {
                 secretMode.active = false;
                 AudioSys.tempo = 1.45; 
                 document.body.classList.remove('blueprint-mode');
                 createParticle(player.x, player.y, 'jump');
                 player.x = canvas.width * 0.30;
+                
+                // CLEANUP: Wipe everything so the screen is clean for normal mode
                 obstacles = obstacles.filter(obs => obs.x > canvas.width * 0.8);
+                coins = []; // <--- THIS IS THE FIX (Removes all floating coins instantly)
+                
                 CONFIG.gameSpeed = 3.2;
             }
-            if (frames % 40 === 0) {
+
+            // --- COIN EXPLOSION ---
+            // Spawns a coin every 20 frames (Very fast!)
+            if (frames % 20 === 0) {
                  createCoin(canvas.width + 100, Math.random() * canvas.height);
             }
-        } else {
-            if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) {
+        
+            else {
+            if (score >= 25 && Math.random() < CONFIG.batterySpawnChance) {
                 spawnBattery();
             }
         }
@@ -1285,9 +1295,17 @@
                 }
             }
 
-            if (obs.x + obs.width < player.x && !obs.passed) {
+           if (obs.x + obs.width < player.x && !obs.passed) {
                 score++;
                 obs.passed = true;
+                
+                // --- NEW: Arcade Ding Sound ---
+                // 1200Hz (High Pitch), 0.1s (Short), Sine Wave (Clean Bell sound)
+                if (typeof AudioSys !== 'undefined') {
+                    AudioSys.playTone(1200, 0.1, 'sine', 0.6);
+                }
+                // ------------------------------
+                
                 document.getElementById('score-display').innerText = `Score: ${score}`;
                 if (!secretMode.active && score % 5 === 0) CONFIG.gameSpeed += 0.2;
             }
@@ -1457,6 +1475,7 @@
 </script>
 </body>
 </html>
+
 
 
 
