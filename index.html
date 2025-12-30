@@ -332,20 +332,22 @@
     <div id="ui-layer">
         <h1 id="main-title">Silly Goose Chase</h1>
 
-       <div id="start-screen" class="message-box active">
-            <p id="instruction-text">Tap repeatedly to fly!</p>
+      <div id="start-screen" class="message-box active">
+            <h1 style="font-size: 3rem; margin: 0 0 10px 0; color: #d32f2f;">Silly Goose</h1>
             
-            <div style="margin-bottom: 15px; font-size: 1.2rem; color: #555;">
-                Playing as: <strong id="current-username-display" style="color:#d32f2f;">Guest</strong>
-                <br>
-                <a href="#" onclick="changeUser()" style="font-size: 1rem; color: #000; text-decoration: underline;">(Switch User)</a>
+            <div style="margin-bottom: 10px; font-size: 1.2rem; color: #555;">
+                Playing as: <strong id="current-username-display" style="color:#000;">Guest</strong>
+                <a href="#" onclick="changeUser()" style="font-size: 0.9rem; color: #555; text-decoration: underline; margin-left: 5px;">(Switch)</a>
             </div>
 
-            <p style="margin-top:0; font-size: 1.2rem; color: #555;">
-                High Score: <span id="high-score-display">0</span>
-            </p>
-
             <button id="start-btn" onclick="startGame()">Start Flying</button>
+
+            <div id="leaderboard-container" style="margin-top: 20px; width: 100%;">
+                <h3 style="margin: 0 0 5px 0; font-size: 1.5rem; text-decoration: underline;">Global Top 5</h3>
+                <div id="leaderboard-list" style="font-size: 1.2rem; text-align: left; background: #eee; padding: 10px; border: 2px solid #333; border-radius: 10px; min-height: 100px;">
+                    Loading scores...
+                </div>
+            </div>
         </div>
         
         <img id="start-rev-img" alt="Rev">
@@ -389,104 +391,132 @@
 <script>
 
    // ==========================================
-    // --- FIREBASE SAFETY WRAPPER ---
+    // --- FIREBASE LEADERBOARD LOGIC ---
     // ==========================================
+    
     let db = null;
-    let worldRecord = 0;
-    // Load saved username or default to "Guest"
     let currentUser = localStorage.getItem('sillyGooseUsername') || "Guest";
-    // Load local high score for this user
-    let highScore = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
+    // We still keep a local personal best to know when to upload
+    let personalBest = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
 
-    // 1. Try to Connect to Database
+    // 1. Initialize Database
     try {
         const firebaseConfig = {
-            apiKey: "AIzaSyA4eP_ypqzLq1KvKe8ffbdQJZTmh9iaKzM",
-            authDomain: "silly-goose-chase.firebaseapp.com",
-            projectId: "silly-goose-chase",
-            storageBucket: "silly-goose-chase.firebasestorage.app",
-            messagingSenderId: "178014526530",
-            appId: "1:178014526530:web:bef279b366275b7b1761db",
-            measurementId: "G-PFK9PNP593"
+            apiKey: "PASTE_YOUR_API_KEY_HERE",
+            authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "PASTE_YOUR_PROJECT_ID",
+            storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "PASTE_YOUR_SENDER_ID",
+            appId: "PASTE_YOUR_APP_ID"
         };
 
-        // Only initialize if Firebase script is loaded
         if (typeof firebase !== 'undefined') {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-            console.log("Firebase connected successfully!");
-            fetchWorldRecord(); // Start listening
-        } else {
-            console.error("CRITICAL: Firebase SDK not found. Check <head> tags.");
+            console.log("Firebase connected.");
+            fetchLeaderboard(); // Load the list immediately
         }
     } catch (err) {
-        console.error("Firebase setup failed:", err);
-        // We catch the error so the GAME doesn't crash!
+        console.warn("Offline Mode:", err);
+        document.getElementById('leaderboard-list').innerText = "Offline Mode (Check Console)";
     }
 
-    // --- FUNCTION 1: Update Name on Screen ---
-    function updateUsernameDisplay() {
-        const el = document.getElementById('current-username-display');
-        if (el) el.innerText = currentUser;
-        
-        const scoreEl = document.getElementById('high-score-display');
-        const bestEl = document.getElementById('best-score-display');
-        if(scoreEl) scoreEl.innerText = highScore;
-        if(bestEl) bestEl.innerText = highScore;
+    // --- FUNCTION 1: Fetch Top 5 Scores ---
+    function fetchLeaderboard() {
+        if (!db) return;
+
+        // Query: Go to 'leaderboard', sort by 'score' (Highest first), take top 5
+        db.collection("leaderboard")
+          .orderBy("score", "desc")
+          .limit(5)
+          .onSnapshot((snapshot) => {
+              const listDiv = document.getElementById('leaderboard-list');
+              if(!listDiv) return;
+              
+              let html = "";
+              let rank = 1;
+              
+              snapshot.forEach((doc) => {
+                  const data = doc.data();
+                  // Add a crown for #1, medals for 2/3
+                  let icon = rank === 1 ? "👑" : (rank === 2 ? "🥈" : (rank === 3 ? "🥉" : `#${rank}`));
+                  
+                  // Highlight YOUR name
+                  const isMe = data.name === currentUser ? "color:#d32f2f; font-weight:bold;" : "";
+                  
+                  html += `<div style="display:flex; justify-content:space-between; ${isMe}">
+                              <span>${icon} ${data.name}</span>
+                              <span>${data.score}</span>
+                           </div>`;
+                  rank++;
+              });
+
+              if (html === "") html = "No scores yet. Be the first!";
+              listDiv.innerHTML = html;
+          }, (error) => {
+              console.log("Leaderboard Error:", error);
+              // If index is missing, this link helps you fix it
+              if (error.message.includes("index")) {
+                  console.log("⚠️ CLICK THE LINK ABOVE IN CONSOLE TO CREATE INDEX ⚠️");
+              }
+          });
     }
 
-    // --- FUNCTION 2: Switch User Button ---
-    window.changeUser = function() {
-        const newName = prompt("Enter new player name:", currentUser);
-        if (newName && newName.trim().length > 0) {
-            currentUser = newName.trim();
-            localStorage.setItem('sillyGooseUsername', currentUser);
+    // --- FUNCTION 2: Save Score (One Entry Per User) ---
+    function trySaveScore(newScore) {
+        if (!db) return;
+
+        // Rule: Only save if it's a personal best (avoids spamming the DB)
+        // OR if you just want to ensure your latest high score is up there
+        if (newScore > personalBest) {
             
-            highScore = 0; 
-            localStorage.setItem('sillyGooseHighScore', 0);
-            
-            updateUsernameDisplay();
-        }
-    };
+            // 1. Update Local
+            personalBest = newScore;
+            localStorage.setItem('sillyGooseHighScore', personalBest);
 
-    // --- FUNCTION 3: Listen for World Record Updates ---
-    function fetchWorldRecord() {
-        if (!db) return; // Skip if database is broken
-        
-        db.collection("game_data").doc("world_record").onSnapshot((doc) => {
-            if (doc && doc.exists) {
-                worldRecord = doc.data().value;
-                let holder = doc.data().player || "Anon";
-                
-                const display = document.getElementById('best-score-display');
-                if(display) display.innerText = `👑 ${worldRecord} (${holder})`;
-            }
-        });
-    }
-
-    // --- FUNCTION 4: Save New World Record ---
-    function trySaveWorldRecord(newScore) {
-        if (!db) return; // Skip if database is broken
-
-        if (newScore > worldRecord) {
+            // 2. Ensure we have a name
             if (currentUser === "Guest") {
-                const nameInput = prompt("WORLD RECORD BROKEN! Enter your name to save it:");
-                if (nameInput) {
-                    currentUser = nameInput.trim();
+                const name = prompt("New High Score! Enter name:");
+                if (name) {
+                    currentUser = name.trim();
                     localStorage.setItem('sillyGooseUsername', currentUser);
-                    updateUsernameDisplay();
+                    updateUserDisplay();
                 }
             }
 
-            db.collection("game_data").doc("world_record").set({
-                value: newScore,
-                player: currentUser
-            });
+            // 3. Save to Cloud (Using Name as ID prevents duplicates!)
+            // We use .set() on a specific doc ID so "Nocto" only has ONE entry
+            db.collection("leaderboard").doc(currentUser).set({
+                name: currentUser,
+                score: newScore,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => console.log("Score saved to leaderboard!"))
+            .catch((err) => console.error("Save failed", err));
         }
     }
 
-    // Start visuals immediately
-    window.addEventListener('load', updateUsernameDisplay);
+    // --- FUNCTION 3: UI Utilities ---
+    function updateUserDisplay() {
+        const el = document.getElementById('current-username-display');
+        if (el) el.innerText = currentUser;
+    }
+
+    window.changeUser = function() {
+        const newName = prompt("Enter username:", currentUser);
+        if (newName) {
+            currentUser = newName.trim();
+            localStorage.setItem('sillyGooseUsername', currentUser);
+            // Reset local best so a new user can compete from 0
+            personalBest = 0; 
+            localStorage.setItem('sillyGooseHighScore', 0);
+            updateUserDisplay();
+        }
+    };
+
+    window.addEventListener('load', updateUserDisplay);
+
+
     
     // =========================================================================
     //  --- 1. ASSET CONFIGURATION ---
@@ -1369,19 +1399,21 @@ window.addEventListener('resize', resizeGame);
                 p.radius += p.growth; p.alpha -= 0.015; 
                 if (p.alpha <= 0) clashCloudParticles.splice(i, 1);
             }
-           if (clashTimer <= 0) {
-               if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('sillyGooseHighScore', highScore);
-                    document.getElementById('best-score-display').innerText = highScore;
-                    document.getElementById('high-score-display').innerText = highScore; 
-                }
+          if (clashTimer <= 0) {
+                // --- NEW SAVE LOGIC ---
+                trySaveScore(score); 
+                // ----------------------
+
                 AudioSys.stopMusic();
                 isGameOver = true;
                 isClashing = false;
                 document.getElementById('final-score').innerText = score;
                 
+                // Show High Score on Game Over too
                 const endScreen = document.getElementById('game-over-screen');
+                // Optional: Add a text showing if they made the leaderboard? 
+                // For now, keep it simple.
+                
                 endScreen.classList.add('active'); 
                 endScreen.classList.add('spin-in');
             }
@@ -1816,6 +1848,7 @@ document.getElementById('best-score-display').innerText = highScore;
 </script>
 </body>
 </html>
+
 
 
 
