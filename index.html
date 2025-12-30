@@ -401,7 +401,6 @@
 
     // 1. Initialize Database
     try {
-        // I HAVE FILLED THESE IN FOR YOU FROM YOUR SCREENSHOT
         const firebaseConfig = {
             apiKey: "AIzaSyA4eP_ypqzLq1KvKe8ffbdQJZTmh9iaKzM",
             authDomain: "silly-goose-chase.firebaseapp.com",
@@ -583,17 +582,41 @@
     if (START_SCREEN_GOOSE_SRC && gooseImg) gooseImg.src = START_SCREEN_GOOSE_SRC.trim();
 
     // ==========================================
-    // --- PART C: AUDIO SYSTEM ---
+    // --- PART C: AUDIO SYSTEM (Restored) ---
     // ==========================================
     const AudioSys = {
         ctx: null, isPlaying: false, isMuted: false, tempo: 1.45,
         masterVolume: 0.5, customBuffers: {}, activeSource: null, bgMusicGainNode: null,
         nextNoteTime: 0, noteIndex: 0, currentTrack: 'main',
 
-        N: { G2: 98, A2: 110, C3: 130.81, E3: 164.81, G3: 196, A4: 440, Cs5: 554.37, E5: 659.25 },
+        N: {
+            G2: 98.00, Gs2: 103.83, A2: 110.00, As2: 116.54, B2: 123.47,
+            C3: 130.81, Cs3: 138.59, D3: 146.83, Ds3: 155.56, E3: 164.81, F3: 174.61, Fs3: 185.00, G3: 196.00, Gs3: 207.65, A3: 220.00, As3: 233.08, B3: 246.94,
+            C4: 261.63, Cs4: 277.18, D4: 293.66, Ds4: 311.13, E4: 329.63, F4: 349.23, Fs4: 369.99, G4: 392.00, Gs4: 415.30, A4: 440.00, As4: 466.16, B4: 493.88,
+            C5: 523.25, Cs5: 554.37, D5: 587.33, Ds5: 622.25, E5: 659.25, F5: 698.46, Fs5: 739.99, G5: 783.99, Gs5: 830.61, A5: 880.00,
+            Eb4: 311.13, Bb4: 466.16, Eb5: 622.25 
+        },
         tracks: {
-            main: [ {f: 'A4', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 0, d: 0.15} ], // Shortened for brevity
-            clash: [ {f: 'C4', d: 0.1}, {f: 'Cs4', d: 0.1}, {f: 0, d: 0.1} ]
+            main: [
+                {f: 'A4', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 'A5', d: 0.15}, 
+                {f: 'G5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'G4', d: 0.15},
+                {f: 'A4', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'D5', d: 0.15}, {f: 'Eb5', d: 0.15}, 
+                {f: 'E5', d: 0.15}, {f: 'G5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 'C5', d: 0.15},
+                {f: 'A5', d: 0.15}, {f: 'Gs5', d: 0.15}, {f: 'G5', d: 0.15}, {f: 'Fs5', d: 0.15}, 
+                {f: 'F5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 'Eb5', d: 0.15}, {f: 'D5', d: 0.15},
+                {f: 'C5', d: 0.15}, {f: 'A4', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'E5', d: 0.15}, 
+                {f: 'A5', d: 0.15}, {f: 0, d: 0.15}, {f: 'A4', d: 0.15}, {f: 0, d: 0.15}
+            ],
+            clash: [
+                {f: 'C4', d: 0.1}, {f: 'Cs4', d: 0.1}, {f: 'D4', d: 0.1}, {f: 'Eb4', d: 0.1},
+                {f: 'E4', d: 0.1}, {f: 'F4', d: 0.1}, {f: 'Fs4', d: 0.1}, {f: 'G4', d: 0.1},
+                {f: 'G4', d: 0.1}, {f: 'Fs4', d: 0.1}, {f: 'F4', d: 0.1}, {f: 'E4', d: 0.1},
+                {f: 'Eb4', d: 0.1}, {f: 'D4', d: 0.1}, {f: 'Cs4', d: 0.1}, {f: 'C4', d: 0.1},
+                {f: 'C5', d: 0.1}, {f: 'B4', d: 0.1}, {f: 'Bb4', d: 0.1}, {f: 'A4', d: 0.1},
+                {f: 'Gs4', d: 0.1}, {f: 'G4', d: 0.1}, {f: 'Fs4', d: 0.1}, {f: 'F4', d: 0.1},
+                {f: 'E4', d: 0.1}, {f: 'Eb4', d: 0.1}, {f: 'D4', d: 0.1}, {f: 'Cs4', d: 0.1},
+                {f: 'C4', d: 0.1}, {f: 0, d: 0.1}, {f: 'G3', d: 0.1}, {f: 'C3', d: 0.2}
+            ]
         },
 
         init: function() {
@@ -645,7 +668,11 @@
             let bufferKey = trackName;
             if(trackName === 'start_screen') bufferKey = 'music_start';
 
-            if (!this.customBuffers[bufferKey]) return; // Wait for load
+            if (!this.customBuffers[bufferKey]) {
+                this.noteIndex = 0;
+                if (this.ctx) this.nextNoteTime = this.ctx.currentTime;
+                return;
+            }
 
             const source = this.ctx.createBufferSource();
             source.buffer = this.customBuffers[bufferKey];
@@ -663,7 +690,23 @@
             if (this.activeSource) { try{this.activeSource.stop();}catch(e){}; this.activeSource=null; }
         },
         
-        update: function() { /* Fallback synth logic removed for brevity, relies on files */ },
+        update: function() {
+            if (this.isPlaying && !this.activeSource) this.scheduleNote();
+        },
+
+        scheduleNote: function() {
+            if (this.isMuted || !this.ctx || !this.isPlaying) return;
+            const track = this.tracks[this.currentTrack];
+            if (!track) return;
+            while (this.nextNoteTime < this.ctx.currentTime + 0.1) {
+                const noteData = track[this.noteIndex];
+                let freq = typeof noteData.f === 'string' ? this.N[noteData.f] : noteData.f;
+                if (freq > 0) this.playTone(freq, noteData.d * (0.9/this.tempo), 'square', 0.05);
+                this.nextNoteTime += noteData.d / this.tempo;
+                this.noteIndex++;
+                if (this.noteIndex >= track.length) this.noteIndex = 0;
+            }
+        },
 
         playSound: function(name) {
             if (this.isMuted || !this.ctx) return;
@@ -678,7 +721,6 @@
                 src.connect(g); g.connect(this.ctx.destination);
                 src.start();
             } else {
-                // Fallback beeps
                 if(name==='jump') this.playTone(300, 0.1, 'triangle', 0.1);
                 if(name==='coin') this.playTone(1200, 0.1, 'sine', 0.3);
             }
@@ -686,7 +728,179 @@
     };
 
     // ==========================================
-    // --- PART D: GAME LOOP & LOGIC ---
+    // --- PART D: DRAWING (ART RESTORED!) ---
+    // ==========================================
+
+    function drawWobblyLine(x1, y1, x2, y2, color, thickness) {
+        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = thickness; ctx.lineCap = 'round';
+        const segments = Math.max(2, Math.floor(Math.abs(x2 - x1 + y2 - y1) / 20));
+        const dx = (x2 - x1) / segments; const dy = (y2 - y1) / segments;
+        ctx.moveTo(x1, y1);
+        for (let i = 1; i <= segments; i++) {
+            const offsetX = Math.sin(doodleTime + i) * 2; const offsetY = Math.cos(doodleTime + i * 2) * 2;
+            ctx.lineTo(x1 + dx * i + offsetX, y1 + dy * i + offsetY);
+        }
+        ctx.stroke();
+    }
+
+    function drawDoodleRect(x, y, w, h, fillColor, strokeColor) {
+        ctx.fillStyle = fillColor;
+        ctx.beginPath(); ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + w - 2, y + 5);
+        ctx.lineTo(x + w - 5, y + h - 2); ctx.lineTo(x + 3, y + h - 5); ctx.closePath(); ctx.fill();
+        drawWobblyLine(x, y, x + w, y, strokeColor, 3); drawWobblyLine(x + w, y, x + w, y + h, strokeColor, 3);
+        drawWobblyLine(x + w, y + h, x, y + h, strokeColor, 3); drawWobblyLine(x, y + h, x, y, strokeColor, 3);
+        ctx.beginPath(); ctx.strokeStyle = "rgba(0,0,0,0.1)"; ctx.lineWidth = 2;
+        for(let i=10; i<w; i+=15) { ctx.moveTo(x + i, y + 5); ctx.lineTo(x + i - 5, y + h - 5); } ctx.stroke();
+    }
+
+    function drawClouds(frames, isBlueprint) {
+        ctx.fillStyle = isBlueprint ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.5)"; 
+        ctx.beginPath();
+        const t = frames * 0.002;
+        for(let i = 0; i < 5; i++) {
+             let cx = ((i * 300) + t * 100) % (canvas.width + 200) - 100;
+             let cy = 50 + Math.sin(i + t) * 30;
+             ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+             ctx.arc(cx + 30, cy - 10, 50, 0, Math.PI * 2);
+             ctx.arc(cx + 60, cy, 40, 0, Math.PI * 2);
+        }
+        ctx.fill();
+    }
+
+    function drawPaperBackground() {
+        ctx.beginPath(); ctx.strokeStyle = "rgba(173, 216, 230, 0.5)"; ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < canvas.width; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+        for (let y = 0; y < canvas.height; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+        ctx.stroke();
+        ctx.beginPath(); ctx.strokeStyle = "rgba(255, 182, 193, 0.8)"; ctx.lineWidth = 2;
+        ctx.moveTo(60, 0); ctx.lineTo(60, canvas.height); ctx.stroke();
+    }
+    
+    function drawBlueprintBackground() {
+        ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = -canvas.height; x < canvas.width; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x + canvas.height, canvas.height); }
+        ctx.stroke();
+    }
+
+    function drawSpaceDoodle(el) {
+        ctx.save();
+        ctx.translate(el.x, el.y);
+        ctx.rotate(el.rotation);
+        ctx.strokeStyle = el.color;
+        ctx.fillStyle = el.color.replace('0.2)', '0.05)'); 
+        ctx.lineWidth = 2; ctx.lineCap = 'round';
+        
+        if (el.type === 'sun') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            const rays = 10;
+            for(let i=0; i<rays; i++) {
+                const angle = (i / rays) * Math.PI * 2;
+                ctx.moveTo(Math.cos(angle)*(el.size/2+5), Math.sin(angle)*(el.size/2+5));
+                ctx.lineTo(Math.cos(angle)*(el.size/2+25), Math.sin(angle)*(el.size/2+25));
+            }
+            ctx.stroke();
+        } else if (el.type === 'moon') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(-el.size/6, -el.size/6, el.size/6, 0, Math.PI*2); ctx.stroke();
+        } else if (el.type === 'earth') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-el.size/3, -el.size/4); ctx.quadraticCurveTo(0, -el.size/2, el.size/3, -el.size/4); ctx.stroke();
+        } else if (el.type === 'comet') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/3, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-el.size/3, 0); ctx.lineTo(-el.size*1.5, -el.size/3); ctx.stroke();
+        } else if (el.type === 'asteroid') {
+            ctx.beginPath(); const points = 8;
+            for(let i=0; i<=points; i++) {
+                const angle = (i / points) * Math.PI * 2;
+                const r = el.size/2 + (Math.sin(i * 345) * 5); 
+                i===0 ? ctx.moveTo(Math.cos(angle)*r, Math.sin(angle)*r) : ctx.lineTo(Math.cos(angle)*r, Math.sin(angle)*r);
+            }
+            ctx.stroke();
+        } else if (el.type === 'planet') {
+            ctx.beginPath(); ctx.arc(0, 0, el.size/2, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(0, 0, el.size/1.2, el.size/4, Math.PI/-6, 0, Math.PI*2); ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    function drawCoin(c, frames) {
+        ctx.save(); ctx.translate(c.x, c.y);
+        const scale = 1 + Math.sin(frames * 0.1 + c.wobbleOffset) * 0.1;
+        ctx.scale(scale, scale);
+        ctx.fillStyle = c.color;
+        ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.fill();
+        drawWobblyLine(-c.radius, -c.radius*0.8, c.radius, -c.radius*0.8, "#000", 2); 
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, c.radius * 0.7, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = "#fff"; ctx.font = `bold ${c.radius}px 'Comic Sans MS'`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(c.value, 0, 2);
+        ctx.restore();
+    }
+
+    function drawFloater(f) {
+        ctx.save(); ctx.globalAlpha = f.life / 60; ctx.fillStyle = f.color;
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 1; ctx.font = "bold 24px 'Comic Sans MS'";
+        ctx.textAlign = "center"; ctx.fillText(f.text, f.x, f.y); ctx.strokeText(f.text, f.x, f.y); ctx.restore();
+    }
+    
+    function drawBattery(x, y, frames) {
+        drawDoodleRect(x, y, 30, 50, "#00e676", "#000"); 
+        ctx.fillStyle = "#888"; ctx.fillRect(x + 7, y - 6, 16, 6);
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.strokeRect(x + 7, y - 6, 16, 6);
+        if (frames % 20 < 10) { ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(x - 5, y - 5, 5, 0, Math.PI*2); ctx.fill(); }
+    }
+
+    function drawGoose(x, y, rotation, frames, isClashing, secretModeActive) {
+        const wiggle = Math.sin(frames * 0.2) * 5;
+        ctx.save(); ctx.translate(x, y); ctx.scale(1.3, 1.3); 
+        if (rotation) ctx.rotate(rotation); 
+        ctx.fillStyle = "white"; ctx.strokeStyle = "black"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(20, -5); ctx.quadraticCurveTo(40, -15, 45 + wiggle/2, -30); ctx.stroke();
+        ctx.beginPath(); ctx.arc(45 + wiggle/2, -30, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "orange"; ctx.beginPath(); ctx.moveTo(53 + wiggle/2, -33); ctx.lineTo(65 + wiggle/2, -28); ctx.lineTo(53 + wiggle/2, -25); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "black"; ctx.beginPath(); ctx.arc(48 + wiggle/2, -32, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(45 + wiggle/2, -36); ctx.lineTo(52 + wiggle/2, -34); ctx.stroke();
+        ctx.fillStyle = "white"; const wingY = Math.sin(frames * 0.5) * 15;
+        ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(10, -25 + wingY, -10, -10 + wingY); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = "orange"; ctx.beginPath(); ctx.moveTo(-5, 15); ctx.lineTo(-10 + wiggle, 25); ctx.moveTo(5, 15); ctx.lineTo(10 + wiggle, 28); ctx.stroke();
+        if (!isClashing) {
+            if (!secretModeActive && frames % 100 < 40 && !rotation) {
+                ctx.font = "bold 20px 'Comic Sans MS'"; ctx.fillStyle = "red"; ctx.fillText("HONK!", 50, -50);
+            } else if (secretModeActive && frames % 10 < 7) {
+                 ctx.save(); ctx.translate((Math.random()-0.5)*8, (Math.random()-0.5)*8);
+                 const size = 20 + Math.random() * 10; ctx.font = `bold ${size}px 'Comic Sans MS'`; 
+                 ctx.fillStyle = Math.random() > 0.5 ? "red" : "#ff3333"; ctx.fillText("HONK!!", 50, -60); ctx.restore();
+            }
+        }
+        ctx.restore();
+    }
+    
+    function drawClashClouds(layer, clashCloudParticles) {
+        clashCloudParticles.forEach(p => {
+            if (p.layer !== layer) return;
+            ctx.fillStyle = p.color; ctx.globalAlpha = (layer === 1) ? p.alpha * 0.6 : p.alpha;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "#888"; ctx.lineWidth = 1; ctx.stroke();
+        });
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawLightning(centerX, centerY) {
+        ctx.beginPath(); ctx.strokeStyle = Math.random() > 0.5 ? "#00ffff" : "#ffffff";
+        ctx.lineWidth = 3 + Math.random() * 3;
+        let lx = centerX - 20 + (Math.random() - 0.5) * 60; let ly = centerY - 200; 
+        ctx.moveTo(lx, ly);
+        for(let i=0; i<12; i++) { lx += (Math.random() - 0.5) * 60; ly += Math.random() * 60; ctx.lineTo(lx, ly); }
+        ctx.shadowBlur = 15; ctx.shadowColor = "#00ffff"; ctx.stroke(); ctx.shadowBlur = 0; 
+    }
+
+    // ==========================================
+    // --- PART E: GAME LOOP & LOGIC ---
     // ==========================================
 
     function resize() {
@@ -702,7 +916,15 @@
     }
 
     function createParticle(x, y, type) {
-        particles.push({ x, y, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, life: 30, type, color: type==='spark'?"#4fc3f7":"rgba(0,0,0,0.2)" });
+        let color = "rgba(0,0,0,0.2)"; if (type === 'spark') color = "#4fc3f7"; 
+        particles.push({ x, y, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, life: 30, type, color });
+    }
+
+    function createBgElement(xOffset) {
+        const types = ['asteroid', 'planet', 'sun', 'moon', 'earth', 'comet'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        let size = 40 + Math.random() * 40;
+        bgElements.push({ x: xOffset, y: Math.random() * canvas.height, type: type, size: size, speedFactor: 0.1 + Math.random() * 0.4, rotation: Math.random() * Math.PI * 2, color: `rgba(100, 116, 139, ${0.1 + Math.random() * 0.15})` });
     }
 
     function createObstacle(overrideX) {
@@ -715,7 +937,25 @@
         if (Math.random() < CONFIG.coinChancePerGap) {
             const coinX = x + (CONFIG.spawnRate * CONFIG.gameSpeed / 2) + 35;
             const coinY = topH + (CONFIG.gapSize/2) + (Math.random()-0.5)*100;
-            coins.push({ x: coinX, y: coinY, value: 5, color: "#cd7f32", radius: 15, wobbleOffset: Math.random()*6 });
+            createCoin(coinX, coinY);
+        }
+    }
+    
+    function createCoin(spawnX, spawnY) {
+        const rand = Math.random();
+        let value = 5, color = "#cd7f32", radius = 15;
+        if (rand > 0.98) { value = 100; color = "#e91e63"; radius = 25; } else if (rand > 0.93) { value = 50; color = "#9c27b0"; radius = 22; } else if (rand > 0.75) { value = 20; color = "#2196f3"; radius = 20; } else if (rand > 0.45) { value = 10; color = "#c0c0c0"; radius = 18; }
+        coins.push({ x: spawnX, y: spawnY, value: value, color: color, radius: radius, wobbleOffset: Math.random() * Math.PI * 2 });
+    }
+    
+    function spawnBattery() {
+        const cycle = frames % CONFIG.spawnRate;
+        if (cycle < 70 || cycle > 170) return; 
+        if (!battery.active && !secretMode.active) {
+            battery.active = true; battery.x = canvas.width + 100;
+            let safeY = canvas.height / 2;
+            if (obstacles.length > 0) safeY = obstacles[obstacles.length-1].topHeight + (CONFIG.gapSize / 2);
+            battery.y = safeY + (Math.random() - 0.5) * 100;
         }
     }
 
@@ -737,7 +977,6 @@
             AudioSys.tempo = 1.45;
         }
 
-        // UI Reset
         document.getElementById('start-screen').classList.remove('active');
         document.getElementById('game-over-screen').classList.remove('active');
         document.getElementById('main-title').classList.add('hidden');
@@ -745,13 +984,13 @@
         document.getElementById('start-goose-img').style.display = 'none';
         document.getElementById('game-stage').classList.remove('blueprint-mode');
         
-        // Game State Reset
         player.baseX = canvas.width * 0.30; 
         player.x = player.baseX; player.y = canvas.height / 2;
         player.velocity = 0; player.rotation = 0;
         
         goose.x = -150; goose.targetX = 150;
         obstacles = []; particles = []; coins = []; scoreFloater = []; bgElements = [];
+        for(let i=0; i<6; i++) createBgElement(Math.random() * canvas.width);
         score = 0;
         document.getElementById('score-display').innerText = `Score: ${score}`;
         
@@ -768,12 +1007,29 @@
 
     function update() {
         frames++; doodleTime += CONFIG.doodleWobbleSpeed;
+        
+        for (let i = bgElements.length - 1; i >= 0; i--) {
+            let el = bgElements[i]; el.x -= CONFIG.gameSpeed * el.speedFactor;
+            if (el.x < -el.size * 2) bgElements.splice(i, 1);
+        }
+        if (frames % 120 === 0) createBgElement(canvas.width + 100);
+
         AudioSys.update();
 
         // 1. Clash Logic
         if (isClashing) {
             clashTimer--;
-            player.rotation = Math.sin(frames*0.1)*0.1;
+            const centerX = player.baseX; const centerY = player.baseY;
+            goose.x += (centerX - 50 - goose.x) * 0.1; goose.y += (centerY - goose.y) * 0.1;
+            player.x += (centerX + 50 - player.x) * 0.1;
+            const t = frames * 0.1;
+            goose.y = centerY + Math.sin(t) * 20; goose.x = centerX - 50 + Math.cos(t) * 10;
+            player.y = centerY + Math.sin(t + Math.PI) * 20; player.x = centerX + 50 + Math.cos(t + Math.PI) * 10;
+            player.rotation = Math.sin(t) * 0.1;
+            
+            if (frames % 2 === 0) clashCloudParticles.push({ x: centerX+(Math.random()-0.5)*80, y: centerY+(Math.random()-0.5)*60, radius: 30, maxRadius: 90+Math.random()*40, growth: 1.0+Math.random()*0.5, alpha: 1.0, color: Math.random()>0.5?'#fff':'#f4f4f4', layer: Math.random()>0.95?1:0 });
+            for (let i = clashCloudParticles.length - 1; i >= 0; i--) { let p = clashCloudParticles[i]; p.radius += p.growth; p.alpha -= 0.015; if (p.alpha <= 0) clashCloudParticles.splice(i, 1); }
+
             if (clashTimer <= 0) {
                 trySaveScore(score);
                 AudioSys.stopMusic();
@@ -784,19 +1040,48 @@
             return;
         }
 
-        // 2. Physics
+        // 2. Secret Mode
+        if (secretMode.active) {
+            secretMode.timer--; CONFIG.gameSpeed = 8;
+            if (frames % 10 === 0) { score++; document.getElementById('score-display').innerText = `Score: ${score}`; }
+            if (secretMode.timer <= 0) {
+                secretMode.active = false; AudioSys.tempo = 1.45; 
+                document.getElementById('game-stage').classList.remove('blueprint-mode');
+                createParticle(player.x, player.y, 'jump'); player.x = canvas.width * 0.30;
+                obstacles = obstacles.filter(obs => obs.x > canvas.width * 0.8); coins = []; 
+                CONFIG.gameSpeed = 3.2;
+            }
+            if (frames % 20 === 0) createCoin(canvas.width + 100, Math.random() * canvas.height);
+        } else {
+             if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) spawnBattery();
+        }
+
+        // 3. Battery
+        if (battery.active) {
+            battery.x -= CONFIG.gameSpeed; battery.wobble = Math.sin(frames * 0.1) * 5;
+            if (player.x < battery.x + battery.width && player.x + player.width > battery.x && player.y < battery.y + battery.height && player.y + player.height > battery.y) {
+                secretMode.active = true; secretMode.timer = secretMode.maxDuration; battery.active = false; 
+                AudioSys.playSound('powerup'); AudioSys.tempo = 1.6; 
+                document.getElementById('game-stage').classList.add('blueprint-mode'); player.x = canvas.width * 0.6;
+                for(let i=0; i<30; i++) createParticle(player.x + 25, player.y + 25, 'spark');
+            }
+            if (battery.x < -100) battery.active = false;
+        }
+
+        // 4. Physics
         if (startFreeze > 0) { startFreeze--; player.velocity = 0; } 
         else { player.velocity += CONFIG.gravity; }
         player.y += player.velocity;
+        player.rotation = Math.min(Math.PI/4, Math.max(-Math.PI/4, player.velocity*0.1));
         
         // Floor/Ceiling
         if (player.y + player.height > canvas.height || player.y < 0) {
             if (!secretMode.active) {
-                AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration;
+                AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration; player.baseY = player.y;
             }
         }
 
-        // 3. Obstacles
+        // 5. Obstacles
         if (frames % CONFIG.spawnRate === 0) createObstacle();
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i];
@@ -805,7 +1090,7 @@
             if (player.x+10 < obs.x+obs.width && player.x+player.width-10 > obs.x && 
                (player.y+10 < obs.topHeight || player.y+player.height-10 > obs.bottomY)) {
                 if (!secretMode.active) {
-                    AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration;
+                    AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration; player.baseY = player.y;
                 }
             }
             // Score
@@ -818,7 +1103,7 @@
             if (obs.x < -100) obstacles.splice(i, 1);
         }
         
-        // 4. Coins
+        // 6. Coins
         for (let i = coins.length - 1; i >= 0; i--) {
             let c = coins[i]; c.x -= CONFIG.gameSpeed;
             let dx = (player.x+25)-c.x, dy = (player.y+25)-c.y;
@@ -827,11 +1112,12 @@
                 scoreFloater.push({x:c.x, y:c.y, text:"+"+c.value, life:60, vy:-2, color:c.color});
                 coins.splice(i, 1);
             }
+            if (c.x < -50) coins.splice(i, 1);
         }
         
-        // 5. Visuals Update
-        scoreFloater.forEach(f => { f.y+=f.vy; f.life--; });
-        particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.life--; });
+        // 7. Visuals Update
+        scoreFloater.forEach(f => { f.y+=f.vy; f.life--; if(f.life<=0) scoreFloater.shift(); });
+        particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.life--; if(p.life<=0) particles.shift(); });
         goose.x += (goose.targetX - goose.x) * 0.05;
         goose.y += ((player.y - goose.y) * 0.02);
     }
@@ -839,33 +1125,58 @@
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Background (Simple Paper Grid)
-        ctx.beginPath(); ctx.strokeStyle = "rgba(173, 216, 230, 0.5)";
-        for (let x=0; x<canvas.width; x+=40) { ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); }
-        for (let y=0; y<canvas.height; y+=40) { ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); }
-        ctx.stroke(); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 182, 193, 0.8)"; ctx.lineWidth = 2;
-        ctx.moveTo(60, 0); ctx.lineTo(60, canvas.height); ctx.stroke();
+        if (secretMode.active) drawBlueprintBackground(); else drawPaperBackground();
+        bgElements.forEach(el => drawSpaceDoodle(el));
+        drawClouds(frames, secretMode.active);
+        
+        const colors = ["#ffcc80", "#a5d6a7", "#90caf9"]; 
+        const strokes = ["#e65100", "#1b5e20", "#0d47a1"]; 
 
-        // Obstacles
         obstacles.forEach(obs => {
-            ctx.fillStyle = ["#ffcc80", "#a5d6a7", "#90caf9"][obs.colorIndex];
-            ctx.fillRect(obs.x, 0, obs.width, obs.topHeight);
-            ctx.strokeRect(obs.x, 0, obs.width, obs.topHeight);
-            ctx.fillRect(obs.x, obs.bottomY, obs.width, canvas.height-obs.bottomY);
-            ctx.strokeRect(obs.x, obs.bottomY, obs.width, canvas.height-obs.bottomY);
+            if (secretMode.active) {
+                ctx.save(); ctx.globalAlpha = 0.3;
+                drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, "#4fc3f7", "#fff");
+                drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, "#4fc3f7", "#fff");
+                ctx.restore();
+            } else {
+                drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, colors[obs.colorIndex], strokes[obs.colorIndex]);
+                drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, colors[obs.colorIndex], strokes[obs.colorIndex]);
+            }
         });
 
-        // Coins & Floaters
-        coins.forEach(c => { ctx.fillStyle=c.color; ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI*2); ctx.fill(); ctx.stroke(); });
-        scoreFloater.forEach(f => { ctx.fillStyle=f.color; ctx.font="24px sans-serif"; ctx.fillText(f.text, f.x, f.y); });
+        if (battery.active) drawBattery(battery.x, battery.y + battery.wobble, frames);
+        coins.forEach(c => drawCoin(c, frames));
+        
+        if (isClashing) drawClashClouds(0, clashCloudParticles);
 
-        // Player
-        if (playerImg.complete && playerImg.naturalWidth > 0) {
-            ctx.save(); ctx.translate(player.x+25, player.y+25); ctx.rotate(player.rotation);
-            ctx.drawImage(playerImg, -37, -37, 75, 75); ctx.restore();
+        if (secretMode.active) {
+             ctx.save();
+             const jitterX = (Math.random()-0.5)*15; const jitterY = (Math.random()-0.5)*15;
+             let drawH = canvas.height*0.85; let drawW = 300; 
+             if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) drawW = drawH * (secretPlayerImg.width/secretPlayerImg.height);
+             
+             if (secretPlayerImg.complete && secretPlayerImg.naturalWidth > 0) {
+                 ctx.shadowBlur = 40+Math.random()*40; ctx.shadowColor = "#00ffff"; 
+                 ctx.drawImage(secretPlayerImg, -drawW*0.1+jitterX, (canvas.height-drawH)/2+jitterY, drawW, drawH);
+             } else { ctx.fillStyle = "#29b6f6"; ctx.fillRect(0,0,canvas.width*0.15,canvas.height); }
+             
+             if (frames % 8 < 4) { drawLightning(canvas.width*0.1, canvas.height*0.5); drawLightning(canvas.width*0.2, canvas.height*0.2); }
+             ctx.restore();
+             drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
         } else {
-            ctx.fillStyle = "blue"; ctx.fillRect(player.x, player.y, 50, 50);
+             drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
+             ctx.save(); ctx.translate(player.x+player.width/2, player.y+player.height/2); ctx.rotate(player.rotation);
+             if (playerImg.complete && playerImg.naturalWidth > 0) {
+                 const aspect = playerImg.width / playerImg.height; const drawW = player.width*1.5; const drawH = drawW/aspect;
+                 ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
+             } else { ctx.fillStyle = "#29b6f6"; ctx.fillRect(-20, -20, 40, 40); ctx.strokeStyle="black"; ctx.strokeRect(-20,-20,40,40); }
+             ctx.restore();
         }
+
+        if (isClashing) drawClashClouds(1, clashCloudParticles);
+        particles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.life/5, 0, Math.PI*2); ctx.fill(); });
+        scoreFloater.forEach(f => drawFloater(f));
+        if (secretMode.active) { ctx.font = "bold 40px 'Comic Sans MS'"; ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`; ctx.textAlign = "center"; ctx.fillText("SUPERCHARGE!", canvas.width/2, 100); }
     }
 
     function loop() {
@@ -881,9 +1192,7 @@
     document.getElementById('restart-btn').addEventListener('click', startGame);
     window.addEventListener('resize', resize);
     window.addEventListener('keydown', (e) => { 
-        if (e.code === 'Space' || e.code === 'ArrowUp') { 
-            if(isPaused) togglePause(); else jump(); 
-        }
+        if (e.code === 'Space' || e.code === 'ArrowUp') { if(isPaused) togglePause(); else jump(); }
         if (e.code === 'Tab') { e.preventDefault(); togglePause(); }
     });
     canvas.addEventListener('mousedown', jump);
@@ -896,8 +1205,6 @@
         isPaused ? overlay.classList.add('active') : overlay.classList.remove('active');
         if(!isPaused && AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
     }
-    
-    // Tap to resume
     document.getElementById('pause-overlay').addEventListener('click', togglePause);
 
     // --- ON LOAD ---
@@ -906,11 +1213,9 @@
         document.getElementById('loading').style.display = 'none';
         updateUserDisplay();
         
-        // Audio controls listeners
         const vs = document.getElementById('volume-slider');
         if(vs) vs.addEventListener('input', (e) => { e.stopPropagation(); AudioSys.setVolume(e.target.value); if(AudioSys.ctx.state==='suspended')AudioSys.ctx.resume(); });
         
-        // Start screen music
         window.addEventListener('click', function ms() {
             if(AudioSys.ctx && AudioSys.ctx.state==='suspended') AudioSys.ctx.resume();
             if(!AudioSys.isPlaying) AudioSys.playTrack('start_screen');
@@ -921,6 +1226,7 @@
 </script>
 </body>
 </html>
+
 
 
 
