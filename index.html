@@ -1358,7 +1358,10 @@
         goose.y += ((player.y - goose.y) * 0.02);
     }
 
-  function startGame() {
+ function startGame() {
+        // 1. STOP DOUBLE CLICKS: If the game is already running, do nothing.
+        if (isPlaying || isClashing) return;
+     
         console.log("Start Button Clicked!"); 
 
         // 1. Audio Wake-up
@@ -1475,6 +1478,7 @@
 </script>
 </body>
 </html>
+
 
 
 
