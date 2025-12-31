@@ -471,10 +471,14 @@
     }
 
     // --- FUNCTION 1: Fetch Top 5 Scores ---
+   // --- FUNCTION 1: Fetch Top 5 Scores (Safe Mode) ---
+    // Change: Uses .get() instead of .onSnapshot() to save money.
     function fetchLeaderboard() {
         if (!db) return;
-        db.collection("leaderboard").orderBy("score", "desc").limit(5)
-          .onSnapshot((snapshot) => {
+        
+        // .get() only fetches ONCE. It does not stay open.
+        db.collection("leaderboard").orderBy("score", "desc").limit(5).get()
+          .then((snapshot) => {
               const listDiv = document.getElementById('leaderboard-list');
               if(!listDiv) return;
               let html = ""; let rank = 1;
@@ -487,9 +491,10 @@
               });
               if (html === "") html = "No scores yet.";
               listDiv.innerHTML = html;
-          }, (error) => {});
+          })
+          .catch((error) => { console.log("Error getting scores:", error); });
     }
-
+    
    // --- FUNCTION 2: Save Score (Robust Version) ---
     function trySaveScore(newScore) {
         // 1. Always update LOCAL High Score immediately (for your phone's memory)
@@ -1347,6 +1352,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
