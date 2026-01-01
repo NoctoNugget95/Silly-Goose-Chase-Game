@@ -62,45 +62,67 @@
         /* 3. MOBILE OVERRIDE (Fills screen only on phones) */
         /* 3. MOBILE OPTIMIZATION */
        /* 3. MOBILE & TABLET OPTIMIZATION */
+      /* 3. MOBILE LANDSCAPE OPTIMIZATION */
         @media (max-width: 1024px) {
+            
+            /* 1. Force the Game to Fill the Screen Exactly */
             #game-stage {
+                width: 100vw !important;
+                height: 100dvh !important; /* 'dvh' handles the mobile URL bar better */
+                max-width: none;
+                max-height: none;
+                aspect-ratio: auto; /* Stop forcing 16:9 on mobile */
                 border: none;
                 box-shadow: none;
-                width: 100%; 
-                /* IMPORTANT: Removed "height: auto" so aspect-ratio works */
-                margin: auto;
+                margin: 0;
+                border-radius: 0;
             }
 
-            /* FIX: Shrink the Title so it doesn't overlap */
+            /* 2. Fix the UI Layout (Flexbox instead of Absolute) */
+            #ui-layer {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly; /* Distribute space evenly */
+                align-items: center;
+                padding-bottom: 20px;
+            }
+
+            /* 3. Scale Text based on Screen Height (vh) so it fits */
             #main-title {
-                font-size: 3rem; /* Down from 5rem */
-                top: 5%;
+                position: static; /* Let Flexbox handle the position */
+                font-size: 10vh; /* 10% of screen height */
+                margin-top: 10px;
+                line-height: 1.0;
             }
 
-            /* FIX: Shrink the Start Box */
+            /* 4. Shrink the Message Boxes */
             .message-box {
+                width: 80%;
+                max-width: 400px;
                 padding: 15px;
-                min-width: 220px;
-                margin-top: 20px;
-                border-width: 4px;
+                margin: 0;
+                background: rgba(255, 255, 255, 0.95); /* Slightly see-through */
             }
 
-            /* FIX: Shrink the "Pick a Name" text */
-            #current-username-display {
-                font-size: 2rem !important; /* Down from 2.8rem */
-            }
-
-            /* FIX: Shrink the Button */
-            button {
-                font-size: 1.2rem;
-                padding: 10px 25px;
-            }
+            /* 5. Scale Inner Text */
+            #current-username-display { font-size: 6vh !important; }
+            .message-box h1 { font-size: 8vh; }
+            .message-box p { font-size: 4vh; }
             
-            /* FIX: Move Score Display slightly */
+            button {
+                font-size: 4vh;
+                padding: 10px 30px;
+            }
+
+            /* 6. Move Score & Audio to corners */
             #score-display {
-                font-size: 1.5rem;
-                top: 15px;
-                right: 15px;
+                font-size: 5vh;
+                top: 10px; right: 15px;
+            }
+            #audio-controls {
+                top: 10px; left: 15px;
+                transform: scale(0.8); /* Make it smaller */
+                transform-origin: top left;
             }
         }
 
@@ -1409,6 +1431,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
