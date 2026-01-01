@@ -1046,14 +1046,6 @@
             return;
         }
 
-        if (!isClashing && !secretMode.active) {
-             // 1. Move the goose towards the player (horizontal)
-             goose.x += (goose.targetX - goose.x) * 0.05; 
-             
-             // 2. Make the goose fly up/down with the player (vertical)
-             goose.y += (player.y - goose.y) * 0.1;
-        }
-
         // 2. Secret Mode
         if (secretMode.active) {
             secretMode.timer--; CONFIG.gameSpeed = 8;
@@ -1372,6 +1364,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
