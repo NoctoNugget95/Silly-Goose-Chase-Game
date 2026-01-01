@@ -706,7 +706,9 @@
                 const src = this.ctx.createBufferSource();
                 src.buffer = this.customBuffers[key];
                 const g = this.ctx.createGain();
-                g.gain.value = (key==='coin2'?3.0:0.6) * this.masterVolume;
+               // If it's Coin2 OR Powerup, play it LOUD (3.0). Otherwise normal (0.6).
+const volumeMultiplier = (key === 'coin2' || key === 'powerup') ? 3.0 : 0.6;
+g.gain.value = volumeMultiplier * this.masterVolume;
                 src.connect(g); g.connect(this.ctx.destination);
                 src.start();
             } else {
@@ -1373,6 +1375,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
