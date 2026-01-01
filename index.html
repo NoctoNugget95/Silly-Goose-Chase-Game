@@ -1162,6 +1162,15 @@
             el.x -= el.speed * (secretMode.active ? 2 : 1);
             if (el.x < -50) el.x = canvas.width + 50;
         });
+// GOOSE LOGIC: This makes it actually follow you
+        if (!isClashing && !secretMode.active) {
+             // 1. Horizontal: Move from -150 (offscreen) to target (onscreen)
+             goose.x += (goose.targetX - goose.x) * 0.05; 
+             
+             // 2. Vertical: Smoothly follow the player's height
+             goose.y += (player.y - goose.y) * 0.08; 
+        }
+        
     }
 
 function draw() {
@@ -1364,6 +1373,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
