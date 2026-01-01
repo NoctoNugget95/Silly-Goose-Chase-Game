@@ -61,18 +61,46 @@
 
         /* 3. MOBILE OVERRIDE (Fills screen only on phones) */
         /* 3. MOBILE OPTIMIZATION */
+       /* 3. MOBILE & TABLET OPTIMIZATION */
         @media (max-width: 1024px) {
             #game-stage {
-                /* Remove border/shadow on mobile for a cleaner look */
                 border: none;
                 box-shadow: none;
-                
-                /* STOP STRETCHING: Let the aspect-ratio handle the size */
-                width: auto; 
-                height: auto;
-                
-                /* Ensure it stays centered */
+                width: 100%; 
+                /* IMPORTANT: Removed "height: auto" so aspect-ratio works */
                 margin: auto;
+            }
+
+            /* FIX: Shrink the Title so it doesn't overlap */
+            #main-title {
+                font-size: 3rem; /* Down from 5rem */
+                top: 5%;
+            }
+
+            /* FIX: Shrink the Start Box */
+            .message-box {
+                padding: 15px;
+                min-width: 220px;
+                margin-top: 20px;
+                border-width: 4px;
+            }
+
+            /* FIX: Shrink the "Pick a Name" text */
+            #current-username-display {
+                font-size: 2rem !important; /* Down from 2.8rem */
+            }
+
+            /* FIX: Shrink the Button */
+            button {
+                font-size: 1.2rem;
+                padding: 10px 25px;
+            }
+            
+            /* FIX: Move Score Display slightly */
+            #score-display {
+                font-size: 1.5rem;
+                top: 15px;
+                right: 15px;
             }
         }
 
@@ -707,8 +735,14 @@
                 src.buffer = this.customBuffers[key];
                 const g = this.ctx.createGain();
                // If it's Coin2 OR Powerup, play it LOUD (3.0). Otherwise normal (0.6).
-const volumeMultiplier = (key === 'coin2' || key === 'powerup') ? 3.0 : 0.6;
-g.gain.value = volumeMultiplier * this.masterVolume;
+// Default volume
+let vol = 0.6; 
+
+// Custom overrides
+if (key === 'coin2') vol = 3.0;
+if (key === 'powerup') vol = 5.0; // MUCH louder specifically for powerup
+
+g.gain.value = vol * this.masterVolume;
                 src.connect(g); g.connect(this.ctx.destination);
                 src.start();
             } else {
@@ -1375,6 +1409,7 @@ function draw() {
 
 </script>
 </html>
+
 
 
 
