@@ -906,9 +906,9 @@
 
     function jump() {
         if (!isPlaying || isGameOver || isClashing) return;
-      if (startFreeze > 0) {
+        if (startFreeze > 0) {
             startFreeze = 0;
-        
+        }
 
         player.velocity = CONFIG.jumpStrength;
         createParticle(player.x, player.y + player.height, 'jump');
@@ -956,7 +956,7 @@
         secretMode.scoreAccumulator = 0;
         secretMode.coinAccumulator = 0;
         battery.active = false;
-        startFreeze = 120;
+        startFreeze = 180;
         createObstacle(canvas.width);
 
         isGameOver = false;
@@ -1361,4 +1361,3 @@
 </script>
 </body>
 </html>
-
