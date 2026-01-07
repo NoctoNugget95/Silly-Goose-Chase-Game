@@ -2,127 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Silly Goose Chase</title>
     
-    <!-- Google Fonts: Barriecito -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
 
-   <style>
-       /* 1. THE PAGE SETUP (The Flex Container) */
+    <style>
         html, body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* No scrollbars on the main page */
-            background-color: #202020; 
+            overflow: hidden;
+            background-color: #202020;
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            
-            /* THIS CENTERS THE GAME */
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            touch-action: none; 
+            touch-action: none;
             -webkit-user-select: none;
             user-select: none;
         }
 
-        /* 2. THE GAME BOX (The Centerpiece) */
-      /* 2. THE GAME BOX (The Centerpiece) */
         #game-stage {
             position: relative;
-            
-            /* DESKTOP DEFAULT */
-            width: 1280px;  
-            height: 720px; 
-
-            /* RESPONSIVE SCALING (The Fix) */
-            /* This makes it shrink to fit ANY screen while staying 16:9 */
+            width: 1280px;
+            height: 720px;
             max-width: 100vw;
             max-height: 100vh;
             aspect-ratio: 16 / 9;
-            
-            /* Background & Border */
             background-color: #f0f0f0;
             background-image: 
                 linear-gradient(#e0e0e0 1px, transparent 1px),
                 linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
             background-size: 40px 40px;
-            
-            border: 4px solid #333; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); 
-            overflow: hidden; 
+            border: 4px solid #333;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
 
-        /* 3. MOBILE OVERRIDE (Fills screen only on phones) */
-        /* 3. MOBILE OPTIMIZATION */
-       /* 3. MOBILE & TABLET OPTIMIZATION */
-      /* 3. MOBILE LANDSCAPE OPTIMIZATION */
         @media (max-width: 1024px) {
-            
-            /* 1. Force the Game to Fill the Screen Exactly */
             #game-stage {
                 width: 100vw !important;
-                height: 100dvh !important; /* 'dvh' handles the mobile URL bar better */
+                height: 100dvh !important;
                 max-width: none;
                 max-height: none;
-                aspect-ratio: auto; /* Stop forcing 16:9 on mobile */
+                aspect-ratio: auto;
                 border: none;
                 box-shadow: none;
                 margin: 0;
                 border-radius: 0;
             }
 
-            /* 2. Fix the UI Layout (Flexbox instead of Absolute) */
             #ui-layer {
                 display: flex;
                 flex-direction: column;
-                justify-content: space-evenly; /* Distribute space evenly */
+                justify-content: space-evenly;
                 align-items: center;
                 padding-bottom: 20px;
             }
 
-            /* 3. Scale Text based on Screen Height (vh) so it fits */
             #main-title {
-                position: static; /* Let Flexbox handle the position */
-                font-size: 10vh; /* 10% of screen height */
+                position: static;
+                font-size: 10vh;
                 margin-top: 10px;
                 line-height: 1.0;
             }
 
-            /* 4. Shrink the Message Boxes */
             .message-box {
                 width: 80%;
                 max-width: 400px;
                 padding: 15px;
                 margin: 0;
-                background: rgba(255, 255, 255, 0.95); /* Slightly see-through */
+                background: rgba(255, 255, 255, 0.95);
             }
 
-            /* 5. Scale Inner Text */
             #current-username-display { font-size: 6vh !important; }
             .message-box h1 { font-size: 8vh; }
             .message-box p { font-size: 4vh; }
-            
-            button {
-                font-size: 4vh;
-                padding: 10px 30px;
-            }
+            button { font-size: 4vh; padding: 10px 30px; }
 
-            /* 6. Move Score & Audio to corners */
             #score-display {
                 font-size: 5vh;
                 top: 10px; right: 15px;
             }
             #audio-controls {
                 top: 10px; left: 15px;
-                transform: scale(0.8); /* Make it smaller */
+                transform: scale(0.8);
                 transform-origin: top left;
+            }
+        }
+
+        /* Mobile landscape lock (added) */
+        @media (orientation: landscape) and (max-width: 1024px) {
+            #game-stage {
+                aspect-ratio: 16 / 9;
+                width: 100vw;
+                height: auto;
+                max-height: 100vh;
             }
         }
 
@@ -142,15 +122,14 @@
             align-items: center;
             z-index: 10;
         }
-        
-        /* Main Title Styling */
+
         #main-title {
             position: absolute;
-            top: 2%; /* Moved down slightly */
+            top: 2%;
             width: 100%;
             text-align: center;
             font-family: 'Barriecito', cursive;
-            font-size: 5rem; /* Bigger title */
+            font-size: 5rem;
             color: #d32f2f;
             text-shadow: 4px 4px 0px #000;
             margin: 0;
@@ -158,42 +137,36 @@
             pointer-events: none;
             transition: opacity 0.5s;
         }
-        
+
         .hidden { display: none !important; }
 
-        /* BIGGER START BOX */
         .message-box {
-            display: none; 
-            pointer-events: auto; 
+            display: none;
+            pointer-events: auto;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             gap: 25px;
-            
             background: #ffffff;
             border: 6px solid #000;
             border-radius: 30px;
-            padding: 40px; /* More breathing room */
+            padding: 40px;
             text-align: center;
             box-shadow: 15px 15px 0px rgba(0,0,0,0.2);
-            
-            /* Bigger Dimensions */
-            min-width: 300px; 
-            
-            font-size: 2rem; /* Bigger Text */
+            min-width: 300px;
+            font-size: 2rem;
             font-family: 'Barriecito', cursive;
             z-index: 20;
-            margin-top: 50px; /* Push it down a bit so it doesn't hit title */
+            margin-top: 50px;
         }
-        
+
         .message-box.active { display: flex !important; }
 
-        /* BUTTON STYLING */
         button {
             background: #ffeb3b;
             border: 4px solid #000;
-            padding: 15px 40px; /* Bigger button */
-            font-size: 1.8rem; /* Bigger text */
+            padding: 15px 40px;
+            font-size: 1.8rem;
             font-family: inherit;
             cursor: pointer;
             border-radius: 12px;
@@ -201,38 +174,33 @@
         }
         button:active { transform: scale(0.95); }
 
-        /* CHARACTER POSITIONING (Fixed to the Box) */
         #start-rev-img {
             position: absolute;
-            right: -10%; /* Tucked into the corner */
+            right: -10%;
             bottom: -15%;
-            height: 90%; /* Scale relative to the box height */
+            height: 90%;
             width: auto;
             scale: 1.1;
             object-fit: contain;
             pointer-events: none;
-            z-index: 1; 
+            z-index: 1;
         }
-        
+
         #start-goose-img {
             position: absolute;
             left: -5%;
             bottom: 0%;
-            height: 60%; 
+            height: 60%;
             width: auto;
             object-fit: contain;
             pointer-events: none;
-            z-index: 1; 
+            z-index: 1;
         }
 
-        /* ... Keep your existing @keyframes spinIn, #loading, etc. ... */
-        
-        /* Secret Level Override */
         #game-stage.blueprint-mode {
             background-color: #0d47a1;
         }
-        
-       /* Audio Controls - Snappier Hover */
+
         #audio-controls {
             position: absolute;
             top: 20px;
@@ -245,15 +213,13 @@
             align-items: center;
             pointer-events: auto;
             z-index: 1001;
-            
-            /* The Animation Settings */
-            width: 40px; /* Default Collapsed */
-            overflow: hidden; /* Cut off the slider when closed */
-            transition: width 0.2s ease-out; /* Faster snap (0.2s) */
+            width: 40px;
+            overflow: hidden;
+            transition: width 0.2s ease-out;
         }
-        
+
         #audio-controls:hover {
-            width: 160px; /* Expanded */
+            width: 160px;
         }
 
         #mute-btn {
@@ -273,41 +239,37 @@
             margin-left: 5px;
             margin-right: 10px;
             cursor: pointer;
-            
-            /* Hide logic */
             opacity: 0;
-            pointer-events: none; /* Can't touch it when hidden */
-            transition: opacity 0.1s ease-in; /* Fade out fast */
+            pointer-events: none;
+            transition: opacity 0.1s ease-in;
         }
 
-        /* Show slider ONLY when hovering the container */
         #audio-controls:hover #volume-slider {
             opacity: 1;
             pointer-events: auto;
-            transition: opacity 0.3s ease-out 0.1s; /* Slight delay appearing */
-        }}
-        
+            transition: opacity 0.3s ease-out 0.1s;
+        }
+
         #score-display {
             position: absolute;
             top: 25px;
             right: 30px;
-            font-size: 2rem; /* Nice and big */
-            font-family: 'Barriecito', cursive; /* Matches your Title font */
+            font-size: 2rem;
+            font-family: 'Barriecito', cursive;
             color: #333;
-            text-shadow: 2px 2px 0px #fff; /* White outline for readability */
-            z-index: 50; /* Sits above the game, but below Pause/Start screens */
-            pointer-events: none; /* Lets you click "through" it if needed */
+            text-shadow: 2px 2px 0px #fff;
+            z-index: 50;
+            pointer-events: none;
             user-select: none;
         }
 
-       /* --- ROTATE MESSAGE STYLES --- */
         #rotate-message {
-            display: none !important; /* Hidden by default on Desktop/Laptop */
+            display: none !important;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #202020; /* Dark background to match the page */
+            background: #202020;
             color: #fff;
-            z-index: 9999; /* Sit on top of EVERYTHING */
+            z-index: 9999;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -315,31 +277,26 @@
             padding: 20px;
         }
 
-        /* SHOW ONLY ON MOBILE PORTRAIT */
         @media only screen and (orientation: portrait) and (max-width: 768px) {
-            #rotate-message { display: flex !important; } /* Force show */
-            #game-stage { display: none !important; } /* Hide the game box */
+            #rotate-message { display: flex !important; }
+            #game-stage { display: none !important; }
         }
 
-       /* PAUSE SCREEN STYLES */
         #pause-overlay {
-            display: none; /* Hidden by default */
+            display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            
-            /* Darken background slightly so text pops */
-            background: rgba(0, 0, 0, 0.4); 
-            
+            background: rgba(0, 0, 0, 0.4);
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 900; /* On top of everything */
-            pointer-events: auto; /* Catch clicks */
-            backdrop-filter: blur(2px); /* Optional: slight blur effect */
+            z-index: 900;
+            pointer-events: auto;
+            backdrop-filter: blur(2px);
         }
-        
+
         #pause-overlay.active { display: flex !important; }
-        
+
         .pause-title {
             font-family: 'Barriecito', cursive;
             font-size: 6rem;
@@ -348,7 +305,7 @@
             margin: 0;
             letter-spacing: 5px;
         }
-        
+
         .pause-subtitle {
             font-family: 'Comic Sans MS', sans-serif;
             font-size: 1.5rem;
@@ -356,21 +313,18 @@
             text-shadow: 2px 2px 0px #000;
             margin-top: 10px;
         }
-        
-        /* Auto-Switch Text based on device type */
+
         .desktop-hint { display: block; }
         .mobile-hint { display: none; }
-        
+
         @media (hover: none) and (pointer: coarse) {
             .desktop-hint { display: none; }
             .mobile-hint { display: block; }
         }
-       
     </style>
 
-     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -383,9 +337,7 @@
 <div id="game-stage">
     <canvas id="gameCanvas"></canvas>
     
-    <div id="score-display" style="position: absolute; top: 20px; right: 30px; z-index: 9999; font-size: 2.5rem; font-family: 'Comic Sans MS', cursive; color: #333; text-shadow: 2px 2px 0px #fff; pointer-events: none;">
-        Score: 0
-    </div>
+    <div id="score-display">Score: 0</div>
 
     <div id="audio-controls">
         <div id="mute-btn">🔊</div>
@@ -395,67 +347,22 @@
     <div id="ui-layer">
         <h1 id="main-title">Silly Goose Chase</h1>
 
-      <div id="start-screen" class="message-box active">
-            
-            <div onclick="changeUser()" style="
-                background: #e3f2fd; 
-                border: 4px solid #0d47a1; /* Slightly thinner border */
-                border-radius: 20px; 
-                padding: 10px 15px; /* Less padding */
-                margin-bottom: 15px; /* Less gap below */
-                cursor: pointer;
-                box-shadow: 4px 4px 0px #0a2472; 
-                transition: transform 0.1s;
-                text-align: center;
-                font-family: 'Barriecito', cursive; 
-            ">
-                <div style="
-                    color: #0d47a1; 
-                    font-size: 1.3rem; /* Scaled down */
-                    margin-bottom: 2px;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                ">
-                    PICK A NAME!!!
-                </div>
-                
-                <div style="
-                    font-size: 2.8rem; /* Scaled down from 3.5rem */
-                    color: #1a1a1a; 
-                    line-height: 1.0;
-                    text-shadow: 2px 2px 0px #fff; 
-                ">
+        <div id="start-screen" class="message-box active">
+            <div id="change-user-btn" style="background: #e3f2fd; border: 4px solid #0d47a1; border-radius: 20px; padding: 10px 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 4px 4px 0px  #0a2472; transition: transform 0.1s; text-align: center; font-family: 'Barriecito', cursive;">
+                <div style="color: #0d47a1; font-size: 1.3rem; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px;">PICK A NAME!!!</div>
+                <div style="font-size: 2.8rem; color: #1a1a1a; line-height: 1.0; text-shadow: 2px 2px 0px #fff;">
                     <span id="current-username-display">Guest</span> 
                     <span style="font-size: 1.8rem; color: #1976d2; vertical-align: middle;">✎</span>
                 </div>
-
-                <div style="
-                    border-bottom: 3px dotted #1976d2; 
-                    width: 70%; 
-                    margin: 5px auto 5px auto; /* Tighter margins */
-                    opacity: 0.6;
-                "></div>
-
-                <div style="
-                    color: #0d47a1; 
-                    font-size: 1rem; /* Scaled down */
-                ">
-                    Show <span style="color:#000">the world</span> who's <span style="color:#000">top goose!</span>
-                </div>
+                <div style="border-bottom: 3px dotted #1976d2; width: 70%; margin: 5px auto; opacity: 0.6;"></div>
+                <div style="color: #0d47a1; font-size: 1rem;">Show <span style="color:#000">the world</span> who's <span style="color:#000">top goose!</span></div>
             </div>
 
-            <button id="start-btn" onclick="startGame()">Start Flying</button>
+            <button id="start-btn">Start Flying</button>
 
             <div id="leaderboard-container" style="margin-top: 15px; width: 100%;">
                 <h3 style="margin: 0 0 5px 0; font-size: 1.4rem; color: #333; text-decoration: none; border-bottom: 2px solid #333; display: inline-block; padding-bottom: 2px;">Global Top 5</h3>
-                <div id="leaderboard-list" style="
-                    font-size: 1rem; 
-                    text-align: left; 
-                    background: #fff; 
-                    padding: 0; 
-                    border: none; 
-                    min-height: 80px;
-                ">
+                <div id="leaderboard-list" style="font-size: 1rem; text-align: left; background: #fff; padding: 0; border: none; min-height: 80px;">
                     <div style="color: #999; padding: 10px;">Loading scores...</div>
                 </div>
             </div>
@@ -482,15 +389,9 @@
 </div>
 
 <script>
-    window.addEventListener('load', function() {
-        setTimeout(function() {
-            var loader = document.getElementById('loading');
-            if (loader) loader.style.display = 'none';
-        }, 500);
-    });
-    
+
     window.onerror = function(msg, url, lineNo, columnNo, error) {
-        var loader = document.getElementById('loading');
+        const loader = document.getElementById('loading');
         if(loader) {
             loader.className = 'error';
             loader.innerHTML = "<strong>⚠️ Game Crashed!</strong><br><br>" + msg + "<br><br>Check Line: " + lineNo;
@@ -501,16 +402,14 @@
 </script>
 
 <script>
-    // ==========================================
-    // --- PART A: FIREBASE & LEADERBOARD ---
-    // ==========================================
-    
     let db = null;
     let currentUser = localStorage.getItem('sillyGooseUsername') || "Guest";
     let highScore = parseInt(localStorage.getItem('sillyGooseHighScore')) || 0;
 
-    // 1. Initialize Database
     try {
+        // SENIOR DEV REVIEW: The API key below is exposed on the client-side.
+        // For a production application, this key should be restricted to your domain
+        // and you should use Firebase security rules to protect your data.
         const firebaseConfig = {
             apiKey: "AIzaSyA4eP_ypqzLq1KvKe8ffbdQJZTmh9iaKzM",
             authDomain: "silly-goose-chase.firebaseapp.com",
@@ -524,7 +423,7 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             console.log("Firebase connected.");
-            fetchLeaderboard(); 
+            fetchLeaderboard();
         }
     } catch (err) {
         console.warn("Offline Mode:", err);
@@ -532,13 +431,8 @@
         if(listDiv) listDiv.innerText = "Offline Mode";
     }
 
-    // --- FUNCTION 1: Fetch Top 5 Scores ---
-   // --- FUNCTION 1: Fetch Top 5 Scores (Safe Mode) ---
-    // Change: Uses .get() instead of .onSnapshot() to save money.
     function fetchLeaderboard() {
         if (!db) return;
-        
-        // .get() only fetches ONCE. It does not stay open.
         db.collection("leaderboard").orderBy("score", "desc").limit(5).get()
           .then((snapshot) => {
               const listDiv = document.getElementById('leaderboard-list');
@@ -556,34 +450,27 @@
           })
           .catch((error) => { console.log("Error getting scores:", error); });
     }
-    
-   // --- FUNCTION 2: Save Score (Robust Version) ---
+
     function trySaveScore(newScore) {
-        // 1. Always update LOCAL High Score immediately (for your phone's memory)
         if (newScore > highScore) {
             highScore = newScore;
             localStorage.setItem('sillyGooseHighScore', highScore);
             updateUserDisplay();
         }
 
-        // 2. CLOUD SAVE
-        // We removed the "prompt" logic completely.
-        // Now, we ONLY save to the cloud if the user is NOT "Guest".
         if (db && currentUser !== "Guest") {
-            // If they have set a real name, save the score silently
             db.collection("leaderboard").doc(currentUser).set({
-                name: currentUser, 
-                score: newScore, 
+                name: currentUser,
+                score: newScore,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
-                console.log("Score saved to leaderboard.");
-                fetchLeaderboard(); 
+                fetchLeaderboard();
             })
             .catch((err) => console.error("Cloud save failed", err));
         }
     }
-    
+
     function updateUserDisplay() {
         const el = document.getElementById('current-username-display');
         if (el) el.innerText = currentUser;
@@ -596,19 +483,20 @@
         if (newName) {
             currentUser = newName.trim();
             localStorage.setItem('sillyGooseUsername', currentUser);
-            highScore = 0; localStorage.setItem('sillyGooseHighScore', 0);
+            highScore = 0;
+            localStorage.setItem('sillyGooseHighScore', 0);
             updateUserDisplay();
         }
     };
 
     // ==========================================
-    // --- PART B: GAME ASSETS & CONSTANTS ---
+    // --- GAME CONSTANTS & CONFIG ---
     // ==========================================
 
-    const PERMANENT_PLAYER_SVG = `sprite.png`; 
+    const PERMANENT_PLAYER_SVG = `sprite.png`;
     const SECRET_PLAYER_SRC = `secret_player.png`;
-    const START_SCREEN_GOOSE_SRC = `goose.png`; 
-    const START_SCREEN_REV_SRC = `rev.png?v=2`; 
+    const START_SCREEN_GOOSE_SRC = `goose.png`;
+    const START_SCREEN_REV_SRC = `rev.png?v=2`;
 
     const AUDIO_FILES = {
         jump: "jump.wav", coin1: "coin1.wav", coin2: "coin2.wav",
@@ -616,53 +504,56 @@
         music_start: "music.start.wav"
     };
 
-   const CONFIG = {
-        gravity: 0.2, 
-        jumpStrength: -6.5, 
-        gameSpeed: 2.5, 
-        spawnRate: 240, 
-        gapSize: 220, 
-        playerScale: 0.15, 
+    // FIX 1: GAME SPEED SYSTEM
+    let GAME_SPEED = 5.0;
+    const SECRET_LEVEL_SPEED = 8;
+    let lastFrameTime = performance.now();
+    let deltaTime = 1.0;
+
+    const CONFIG = {
+        gravity: 900,
+        jumpStrength: -350,
+        spawnDistance: 600,
+        gapSize: 255,
+        playerScale: 0.15,
         doodleWobbleSpeed: 0.1,
-        clashDuration: 300, 
-        batterySpawnChance: 0.001, 
-        coinChancePerGap: 0.4 // FIXED: 1.0 means 100% chance (1 coin per obstacle)
+        clashDuration: 300,
+        batterySpawnChance: 0.05,
+        coinChancePerGap: 0.4
     };
-    
-    // Globals
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let frames = 0; let score = 0; let startFreeze = 0;
-    let isGameOver = false; let isPlaying = false; 
-    let isClashing = false; let clashTimer = 0; 
+    let isGameOver = false; let isPlaying = false;
+    let isClashing = false; let clashTimer = 0;
     let doodleTime = 0; let isPaused = false;
-    let isLooping = false; // FIX: Prevents double speed bug
-    
-    // Entities
-    const secretMode = { active: false, timer: 0, maxDuration: 300 };
+    let isLooping = false;
+
+    const secretMode = { active: false, timer: 0, maxDuration: 300, scoreAccumulator: 0, coinAccumulator: 0 };
     const battery = { active: false, x: 0, y: 0, width: 30, height: 50, wobble: 0 };
     const player = { x: 0, y: 0, width: 50, height: 50, velocity: 0, rotation: 0, baseX: 0, baseY: 0 };
     const goose = { x: -100, y: 0, targetX: 50, frame: 0 };
-    
+
     let obstacles = []; let particles = []; let clashCloudParticles = [];
     let bgElements = []; let coins = []; let scoreFloater = [];
 
-    // --- ASSET LOADING ---
     const playerImg = new Image();
     playerImg.onerror = function() { playerImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjMjliNmY2Ii8+PC9zdmc+"; };
     if (PERMANENT_PLAYER_SVG) playerImg.src = PERMANENT_PLAYER_SVG.trim();
 
     const secretPlayerImg = new Image();
     if (SECRET_PLAYER_SRC) secretPlayerImg.src = SECRET_PLAYER_SRC.trim();
-    
+
     const revImg = document.getElementById('start-rev-img');
     const gooseImg = document.getElementById('start-goose-img');
     if (START_SCREEN_REV_SRC && revImg) revImg.src = START_SCREEN_REV_SRC.trim();
     if (START_SCREEN_GOOSE_SRC && gooseImg) gooseImg.src = START_SCREEN_GOOSE_SRC.trim();
 
     // ==========================================
-    // --- PART C: AUDIO SYSTEM ---
+    // --- AUDIO SYSTEM ---
     // ==========================================
+
     const AudioSys = {
         ctx: null, isPlaying: false, isMuted: false, tempo: 1.45,
         masterVolume: 0.5, customBuffers: {}, activeSource: null, bgMusicGainNode: null,
@@ -670,26 +561,44 @@
 
         N: { G2: 98, A2: 110, C3: 130.81, E3: 164.81, G3: 196, A4: 440, Cs5: 554.37, E5: 659.25 },
         tracks: {
-            main: [ {f: 'A4', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 0, d: 0.15} ], 
+            main: [ {f: 'A4', d: 0.15}, {f: 'C5', d: 0.15}, {f: 'E5', d: 0.15}, {f: 0, d: 0.15} ],
             clash: [ {f: 'C4', d: 0.1}, {f: 'Cs4', d: 0.1}, {f: 0, d: 0.1} ]
         },
 
         init: function() {
-            if (!this.ctx) {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                this.loadCustomSounds();
-            }
-        },
+            return new Promise((resolve) => {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    const promises = [];
+                    const loadBuffer = (key, path) => {
+                        if (!path) return;
+                        const promise = fetch(path)
+                            .then(r => r.arrayBuffer())
+                            .then(b => this.ctx.decodeAudioData(b))
+                            .then(d => { this.customBuffers[key] = d; })
+                            .catch(e => { console.warn(`Audio file ${key} could not be loaded.`) });
+                        promises.push(promise);
+                    };
 
-        loadCustomSounds: function() {
-            const loadBuffer = (key, path) => {
-                if (!path) return;
-                fetch(path).then(r => r.arrayBuffer()).then(b => this.ctx.decodeAudioData(b)).then(d => { this.customBuffers[key] = d; }).catch(e=>{});
-            };
-            for(let k in AUDIO_FILES) loadBuffer(k, AUDIO_FILES[k]);
-            loadBuffer('main', AUDIO_FILES.music_main);
-            loadBuffer('clash', AUDIO_FILES.music_clash);
-            loadBuffer('music_start', AUDIO_FILES.music_start);
+                    for (let k in AUDIO_FILES) loadBuffer(k, AUDIO_FILES[k]);
+                    if (AUDIO_FILES.music_main) loadBuffer('main', AUDIO_FILES.music_main);
+                    if (AUDIO_FILES.music_clash) loadBuffer('clash', AUDIO_FILES.music_clash);
+                    if (AUDIO_FILES.music_start) {
+                        loadBuffer('music_start', AUDIO_FILES.music_start);
+                        loadBuffer('start_screen', AUDIO_FILES.music_start);
+                    }
+
+                    Promise.all(promises).then(() => {
+                        if (!this.customBuffers['music_main'] && this.customBuffers['main']) this.customBuffers['music_main'] = this.customBuffers['main'];
+                        if (!this.customBuffers['music_clash'] && this.customBuffers['clash']) this.customBuffers['music_clash'] = this.customBuffers['clash'];
+                        resolve();
+                    });
+                } catch(e) {
+                    console.error("Audio system initialization failed.", e);
+                    resolve(); // Resolve anyway to not hang the game
+                }
+            });
         },
 
         toggleMute: function() {
@@ -697,7 +606,7 @@
             document.getElementById('mute-btn').innerText = this.isMuted ? "🔇" : "🔊";
             if(this.ctx) this.isMuted ? this.ctx.suspend() : this.ctx.resume();
         },
-        
+
         setVolume: function(val) {
             this.masterVolume = parseFloat(val);
             if (this.masterVolume > 0 && this.isMuted) this.toggleMute();
@@ -709,13 +618,16 @@
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = type; osc.frequency.value = freq;
-            gain.gain.setValueAtTime(vol * this.masterVolume, this.ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+            const effectiveVol = Math.max(0.001, vol * this.masterVolume);
+            gain.gain.setValueAtTime(effectiveVol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
             osc.connect(gain); gain.connect(this.ctx.destination);
             osc.start(); osc.stop(this.ctx.currentTime + duration);
         },
 
         playTrack: function(trackName) {
+            // ensure audio context exists (init on first user gesture)
+            if (!this.ctx) return;
             if (this.activeSource) { try { this.activeSource.stop(); } catch(e){} }
             this.currentTrack = trackName;
             this.isPlaying = true;
@@ -738,33 +650,23 @@
             this.isPlaying = false;
             if (this.activeSource) { try{this.activeSource.stop();}catch(e){}; this.activeSource=null; }
         },
-        
-        update: function() { 
-            if (this.isPlaying && !this.activeSource) this.scheduleNote();
-        },
 
-        scheduleNote: function() {
-             // Basic fallback synth logic would go here
-        },
+        update: function() { },
 
         playSound: function(name) {
-            if (this.isMuted || !this.ctx) return;
+            // ensure audio context exists (init on first user gesture)
+            if (!this.ctx || this.isMuted) return;
             let key = name;
             if (name === 'coin') key = Math.random() > 0.5 ? 'coin1' : 'coin2';
-            
+
             if (this.customBuffers[key]) {
                 const src = this.ctx.createBufferSource();
                 src.buffer = this.customBuffers[key];
                 const g = this.ctx.createGain();
-               // If it's Coin2 OR Powerup, play it LOUD (3.0). Otherwise normal (0.6).
-// Default volume
-let vol = 0.6; 
-
-// Custom overrides
-if (key === 'coin2') vol = 3.0;
-if (key === 'powerup') vol = 5.0; // MUCH louder specifically for powerup
-
-g.gain.value = vol * this.masterVolume;
+                let vol = 0.6;
+                if (key === 'coin2') vol = 3.0;
+                if (key === 'powerup') vol = 6.6;
+                g.gain.value = vol * this.masterVolume;
                 src.connect(g); g.connect(this.ctx.destination);
                 src.start();
             } else {
@@ -775,7 +677,7 @@ g.gain.value = vol * this.masterVolume;
     };
 
     // ==========================================
-    // --- PART D: DRAWING (ART RESTORED!) ---
+    // --- DRAWING FUNCTIONS ---
     // ==========================================
 
     function drawWobblyLine(x1, y1, x2, y2, color, thickness) {
@@ -823,7 +725,7 @@ g.gain.value = vol * this.masterVolume;
         ctx.beginPath(); ctx.strokeStyle = "rgba(255, 182, 193, 0.8)"; ctx.lineWidth = 2;
         ctx.moveTo(60, 0); ctx.lineTo(60, canvas.height); ctx.stroke();
     }
-    
+
     function drawBlueprintBackground() {
         ctx.beginPath(); ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 1;
         const gridSize = 40;
@@ -918,7 +820,7 @@ g.gain.value = vol * this.masterVolume;
         }
         ctx.restore();
     }
-    
+
     function drawClashClouds(layer, clashCloudParticles) {
         clashCloudParticles.forEach(p => {
             if (p.layer !== layer) return;
@@ -939,14 +841,14 @@ g.gain.value = vol * this.masterVolume;
     }
 
     // ==========================================
-    // --- PART E: GAME LOOP & LOGIC ---
+    // --- GAME LOGIC ---
     // ==========================================
 
     function resize() {
         const stage = document.getElementById('game-stage');
         canvas.width = stage.clientWidth;
         canvas.height = stage.clientHeight;
-        ctx.imageSmoothingEnabled = true; // FIX: Smooth graphics
+        ctx.imageSmoothingEnabled = true;
         if (!isPlaying && !isClashing && player) {
             player.baseX = canvas.width * 0.30;
             player.x = player.baseX; player.y = canvas.height / 2;
@@ -954,7 +856,7 @@ g.gain.value = vol * this.masterVolume;
     }
 
     function createParticle(x, y, type) {
-        let color = "rgba(0,0,0,0.2)"; if (type === 'spark') color = "#4fc3f7"; 
+        let color = "rgba(0,0,0,0.2)"; if (type === 'spark') color = "#4fc3f7";
         particles.push({ x, y, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, life: 30, type, color });
     }
 
@@ -969,28 +871,33 @@ g.gain.value = vol * this.masterVolume;
         let x = (typeof overrideX === 'number') ? overrideX : canvas.width;
         const minH = 50, maxH = canvas.height - CONFIG.gapSize - minH;
         const topH = Math.floor(Math.random() * (maxH - minH + 1) + minH);
-        
+
         obstacles.push({ x: x, topHeight: topH, bottomY: topH + CONFIG.gapSize, width: 70, passed: false, colorIndex: Math.floor(Math.random()*3) });
 
-        if (Math.random() < CONFIG.coinChancePerGap) {
-            const coinX = x + (CONFIG.spawnRate * CONFIG.gameSpeed / 2) + 35;
-            const coinY = topH + (CONFIG.gapSize/2) + (Math.random()-0.5)*100;
+         let batterySpawned = false;
+        if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) {
+            spawnBattery(x + CONFIG.spawnDistance / 2);
+            batterySpawned = true;
+        }
+
+        if (!batterySpawned && Math.random() < CONFIG.coinChancePerGap) {
+            const coinX = x + CONFIG.spawnDistance / 2;
+            const coinY = 50 + Math.random() * (canvas.height - 100);
             createCoin(coinX, coinY);
         }
     }
-    
+
     function createCoin(spawnX, spawnY) {
         const rand = Math.random();
         let value = 5, color = "#cd7f32", radius = 15;
         if (rand > 0.98) { value = 100; color = "#e91e63"; radius = 25; } else if (rand > 0.93) { value = 50; color = "#9c27b0"; radius = 22; } else if (rand > 0.75) { value = 20; color = "#2196f3"; radius = 20; } else if (rand > 0.45) { value = 10; color = "#c0c0c0"; radius = 18; }
         coins.push({ x: spawnX, y: spawnY, value: value, color: color, radius: radius, wobbleOffset: Math.random() * Math.PI * 2 });
     }
-    
-    function spawnBattery() {
-        const cycle = frames % CONFIG.spawnRate;
-        if (cycle < 70 || cycle > 170) return; 
+
+      function spawnBattery(overrideX) {
         if (!battery.active && !secretMode.active) {
-            battery.active = true; battery.x = canvas.width + 100;
+             battery.active = true; 
+            battery.x = (typeof overrideX === 'number') ? overrideX : (canvas.width + 100);
             let safeY = canvas.height / 2;
             if (obstacles.length > 0) safeY = obstacles[obstacles.length-1].topHeight + (CONFIG.gapSize / 2);
             battery.y = safeY + (Math.random() - 0.5) * 100;
@@ -999,19 +906,17 @@ g.gain.value = vol * this.masterVolume;
 
     function jump() {
         if (!isPlaying || isGameOver || isClashing) return;
-        if (startFreeze > 0) return; // FIX: Ignore clicks during freeze
-        
+        if (startFreeze > 0) return;
+
         player.velocity = CONFIG.jumpStrength;
         createParticle(player.x, player.y + player.height, 'jump');
         if (frames % 10 === 0) AudioSys.playSound('jump');
     }
 
     function startGame() {
-        if (isPlaying || isClashing) return; 
+        if (isPlaying || isClashing) return;
 
-        // Start Audio Immediately
         if (AudioSys) {
-            AudioSys.init();
             if (AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
             AudioSys.playTrack('main');
             AudioSys.tempo = 1.45;
@@ -1023,27 +928,40 @@ g.gain.value = vol * this.masterVolume;
         document.getElementById('start-rev-img').style.display = 'none';
         document.getElementById('start-goose-img').style.display = 'none';
         document.getElementById('game-stage').classList.remove('blueprint-mode');
-        
-        player.baseX = canvas.width * 0.30; 
-        player.x = player.baseX; player.y = canvas.height / 2;
-        player.velocity = 0; player.rotation = 0;
-        
-        goose.x = -150; goose.targetX = 150;
-        obstacles = []; particles = []; coins = []; scoreFloater = []; bgElements = [];
+
+        player.baseX = canvas.width * 0.30;
+        player.x = player.baseX;
+        player.y = canvas.height / 2;
+        player.velocity = 0;
+        player.rotation = 0;
+
+        goose.x = -150;
+        goose.targetX = 150;
+        obstacles = [];
+        particles = [];
+        coins = [];
+        scoreFloater = [];
+        bgElements = [];
+
         for(let i=0; i<6; i++) createBgElement(Math.random() * canvas.width);
+
         score = 0;
         document.getElementById('score-display').innerText = `Score: ${score}`;
-        
-        frames = 1; 
-        CONFIG.gameSpeed = 3.5; 
-        secretMode.active = false; battery.active = false;
-        
-        startFreeze = 60;   
-        createObstacle(canvas.width); 
-        
-        isGameOver = false; isClashing = false; isPlaying = true; isPaused = false;
-        
-        // FIX: Prevent Double Loop
+
+        frames = 1;
+        GAME_SPEED = GAME_SPEED || 5.0;
+        secretMode.active = false;
+        secretMode.scoreAccumulator = 0;
+        secretMode.coinAccumulator = 0;
+        battery.active = false;
+        startFreeze = 60;
+        createObstacle(canvas.width);
+
+        isGameOver = false;
+        isClashing = false;
+        isPlaying = true;
+        isPaused = false;
+
         if (!isLooping) {
             isLooping = true;
             loop();
@@ -1051,357 +969,333 @@ g.gain.value = vol * this.masterVolume;
     }
 
     function update() {
-        frames++; doodleTime += CONFIG.doodleWobbleSpeed;
-        
-        // FIX: FREEZE LOGIC
+        const now = performance.now();
+        const dtSeconds = (now - lastFrameTime) / 1000;
+        lastFrameTime = now;
+        deltaTime = dtSeconds * 60;
+
+        frames++;
+        doodleTime += CONFIG.doodleWobbleSpeed * deltaTime;
+
+        // FREEZE CHECK FIRST
         if (startFreeze > 0) {
-            startFreeze--;
+            startFreeze -= deltaTime;
             const targetY = canvas.height / 2 + Math.sin(frames * 0.1) * 20;
             player.y += (targetY - player.y) * 0.1;
-            player.velocity = 0; player.rotation = 0;
-            
-            // Move background only
+            player.velocity = 0;
+            player.rotation = 0;
+
             for (let i = bgElements.length - 1; i >= 0; i--) {
-                let el = bgElements[i]; el.x -= CONFIG.gameSpeed * el.speedFactor;
+                let el = bgElements[i];
+                el.x -= GAME_SPEED * deltaTime * el.speedFactor;
                 if (el.x < -el.size * 2) bgElements.splice(i, 1);
             }
             if (frames % 120 === 0) createBgElement(canvas.width + 100);
-            
-            // Skip rest of update
-            return; 
+            return; // EXIT EARLY
         }
 
-        // Normal Background Update
+        // PHYSICS AFTER FREEZE
+        player.velocity += CONFIG.gravity * dtSeconds;
+        player.y += player.velocity * dtSeconds;
+        player.rotation = Math.min(Math.PI/4, Math.max(-Math.PI/4, player.velocity*0.002));
+
         for (let i = bgElements.length - 1; i >= 0; i--) {
-            let el = bgElements[i]; el.x -= CONFIG.gameSpeed * el.speedFactor;
+            let el = bgElements[i];
+            el.x -= GAME_SPEED * deltaTime * el.speedFactor;
             if (el.x < -el.size * 2) bgElements.splice(i, 1);
         }
         if (frames % 120 === 0) createBgElement(canvas.width + 100);
 
         AudioSys.update();
 
-        // 1. Clash Logic
         if (isClashing) {
-            clashTimer--;
-            const centerX = player.baseX; const centerY = player.baseY;
-            goose.x += (centerX - 50 - goose.x) * 0.1; goose.y += (centerY - goose.y) * 0.1;
+            clashTimer -= deltaTime;
+            const centerX = player.baseX;
+            const centerY = player.baseY;
+            goose.x += (centerX - 50 - goose.x) * 0.1;
+            goose.y += (centerY - goose.y) * 0.1;
             player.x += (centerX + 50 - player.x) * 0.1;
             const t = frames * 0.1;
-            goose.y = centerY + Math.sin(t) * 20; goose.x = centerX - 50 + Math.cos(t) * 10;
-            player.y = centerY + Math.sin(t + Math.PI) * 20; player.x = centerX + 50 + Math.cos(t + Math.PI) * 10;
+            goose.y = centerY + Math.sin(t) * 20;
+            goose.x = centerX - 50 + Math.cos(t) * 10;
+            player.y = centerY + Math.sin(t + Math.PI) * 20;
+            player.x = centerX + 50 + Math.cos(t + Math.PI) * 10;
             player.rotation = Math.sin(t) * 0.1;
-            
+
             if (frames % 2 === 0) clashCloudParticles.push({ x: centerX+(Math.random()-0.5)*80, y: centerY+(Math.random()-0.5)*60, radius: 30, maxRadius: 90+Math.random()*40, growth: 1.0+Math.random()*0.5, alpha: 1.0, color: Math.random()>0.5?'#fff':'#f4f4f4', layer: Math.random()>0.95?1:0 });
-            for (let i = clashCloudParticles.length - 1; i >= 0; i--) { let p = clashCloudParticles[i]; p.radius += p.growth; p.alpha -= 0.015; if (p.alpha <= 0) clashCloudParticles.splice(i, 1); }
+            for (let i = clashCloudParticles.length - 1; i >= 0; i--) {
+                let p = clashCloudParticles[i];
+                p.radius += p.growth * deltaTime;
+                p.alpha -= 0.015 * deltaTime;
+                if (p.alpha <= 0) clashCloudParticles.splice(i, 1);
+            }
 
             if (clashTimer <= 0) {
                 trySaveScore(score);
                 AudioSys.stopMusic();
-                isGameOver = true; isClashing = false;
+                isGameOver = true;
+                isClashing = false;
                 document.getElementById('final-score').innerText = score;
                 document.getElementById('game-over-screen').classList.add('active');
             }
             return;
         }
 
-        // 2. Secret Mode
         if (secretMode.active) {
-            secretMode.timer--; CONFIG.gameSpeed = 8;
-            if (frames % 10 === 0) { score++; document.getElementById('score-display').innerText = `Score: ${score}`; }
-            if (secretMode.timer <= 0) {
-                secretMode.active = false; AudioSys.tempo = 1.45; 
-                document.getElementById('game-stage').classList.remove('blueprint-mode');
-                createParticle(player.x, player.y, 'jump'); player.x = canvas.width * 0.30;
-                obstacles = obstacles.filter(obs => obs.x > canvas.width * 0.8); coins = []; 
-                CONFIG.gameSpeed = 3.2;
+           secretMode.timer -= deltaTime;
+           secretMode.scoreAccumulator += deltaTime;
+            if (secretMode.scoreAccumulator >= 10) {
+                score++;
+                document.getElementById('score-display').innerText = `Score: ${score}`;
+                secretMode.scoreAccumulator -= 10;
             }
-            if (frames % 20 === 0) createCoin(canvas.width + 100, Math.random() * canvas.height);
-        } else {
-             if (score >= 30 && Math.random() < CONFIG.batterySpawnChance) spawnBattery();
+            if (secretMode.timer <= 0) {
+                secretMode.active = false;
+                AudioSys.tempo = 1.45;
+                document.getElementById('game-stage').classList.remove('blueprint-mode');
+                createParticle(player.x, player.y, 'jump');
+                player.x = canvas.width * 0.30;
+                obstacles = obstacles.filter(obs => obs.x > canvas.width * 0.8);
+                coins = [];
+            }
+            secretMode.coinAccumulator += deltaTime;
+            if (secretMode.coinAccumulator >= 20) {
+                createCoin(canvas.width + 100, Math.random() * canvas.height);
+                secretMode.coinAccumulator -= 20;
+            }
         }
 
-        // 3. Battery
         if (battery.active) {
-            battery.x -= CONFIG.gameSpeed; battery.wobble = Math.sin(frames * 0.1) * 5;
-            if (player.x < battery.x + battery.width && player.x + player.width > battery.x && player.y < battery.y + battery.height && player.y + player.height > battery.y) {
-                secretMode.active = true; secretMode.timer = secretMode.maxDuration; battery.active = false; 
-                AudioSys.playSound('powerup'); AudioSys.tempo = 1.6; 
-                document.getElementById('game-stage').classList.add('blueprint-mode'); player.x = canvas.width * 0.6;
+            battery.x -= GAME_SPEED * deltaTime;
+            battery.wobble = Math.sin(frames * 0.1) * 5;
+
+            const hitMargin = 40; // Expand hitbox to match visual sprite size
+            if (player.x - hitMargin < battery.x + battery.width && player.x + player.width + hitMargin > battery.x &&
+                player.y - hitMargin < battery.y + battery.height && player.y + player.height + hitMargin > battery.y) {
+
+                AudioSys.playSound('powerup');
+                secretMode.active = true;
+                secretMode.timer = secretMode.maxDuration;
+                battery.active = false;
+                AudioSys.tempo = 1.6;
+                document.getElementById('game-stage').classList.add('blueprint-mode');
+                player.x = canvas.width * 0.6;
                 for(let i=0; i<30; i++) createParticle(player.x + 25, player.y + 25, 'spark');
             }
             if (battery.x < -100) battery.active = false;
         }
 
-        // 4. Physics
-        player.velocity += CONFIG.gravity;
-        player.y += player.velocity;
-        player.rotation = Math.min(Math.PI/4, Math.max(-Math.PI/4, player.velocity*0.1));
-        
-        // Floor/Ceiling
         if (player.y + player.height > canvas.height || player.y < 0) {
             if (!secretMode.active) {
-                AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration; player.baseY = player.y;
+                AudioSys.playTrack('clash');
+                isPlaying = false;
+                isClashing = true;
+                clashTimer = CONFIG.clashDuration;
+                player.baseY = player.y;
             }
         }
 
-        // 5. Obstacles
-        if (frames % CONFIG.spawnRate === 0) createObstacle();
+        const lastObs = obstacles[obstacles.length - 1];
+        if (!lastObs || (canvas.width - lastObs.x >= CONFIG.spawnDistance)) {
+            createObstacle();
+        }
+
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i];
-            obs.x -= CONFIG.gameSpeed;
-            // Collision
-            if (player.x+10 < obs.x+obs.width && player.x+player.width-10 > obs.x && 
+            obs.x -= GAME_SPEED * deltaTime;
+
+            if (player.x+10 < obs.x+obs.width && player.x+player.width-10 > obs.x &&
                (player.y+10 < obs.topHeight || player.y+player.height-10 > obs.bottomY)) {
                 if (!secretMode.active) {
-                    AudioSys.playTrack('clash'); isPlaying = false; isClashing = true; clashTimer = CONFIG.clashDuration; player.baseY = player.y;
+                    AudioSys.playTrack('clash');
+                    isPlaying = false;
+                    isClashing = true;
+                    clashTimer = CONFIG.clashDuration;
+                    player.baseY = player.y;
                 }
             }
-            // Score
-           if (obs.x + (obs.width / 2) < player.x && !obs.passed) {
-                score++; obs.passed = true;
+
+            if (obs.x + (obs.width / 2) < player.x && !obs.passed) {
+                score++;
+                obs.passed = true;
                 AudioSys.playTone(1200, 0.1, 'sine', 0.6);
                 document.getElementById('score-display').innerText = `Score: ${score}`;
-                if (!secretMode.active && score % 5 === 0) CONFIG.gameSpeed += 0.2;
             }
             if (obs.x < -100) obstacles.splice(i, 1);
         }
-        
-        // 6. Coins
+
         for (let i = coins.length - 1; i >= 0; i--) {
-            let c = coins[i]; c.x -= CONFIG.gameSpeed;
+            let c = coins[i];
+            c.x -= GAME_SPEED * deltaTime;
             let dx = (player.x+25)-c.x, dy = (player.y+25)-c.y;
-            
-            // Check Collision
+
             if (Math.sqrt(dx*dx+dy*dy) < c.radius+25) {
-                score += c.value; 
+                score += c.value;
                 AudioSys.playSound('coin');
-
-                // --- THIS WAS MISSING: Update the screen immediately! ---
                 document.getElementById('score-display').innerText = "Score: " + score;
-                // -------------------------------------------------------
-
                 scoreFloater.push({x:c.x, y:c.y, text:"+"+c.value, life:60, vy:-2, color:c.color});
                 coins.splice(i, 1);
             }
             if (c.x < -50) coins.splice(i, 1);
         }
-        
-      // 7. CLEANUP: Particles (Sparks)
-        // INCLUDES FIX: Backwards loop + splice to stop "Slow Game" lag
+
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life--;
+            p.x += p.vx * deltaTime;
+            p.y += p.vy * deltaTime;
+            p.life -= deltaTime;
             if (p.life <= 0) particles.splice(i, 1);
         }
 
-        // 8. CLEANUP: Floating Text (+5, +20)
-        // INCLUDES FIX: Removes text after it fades so memory doesn't fill up
         for (let i = scoreFloater.length - 1; i >= 0; i--) {
             let f = scoreFloater[i];
-            f.y += f.vy;
-            f.life--;
+            f.y += f.vy * deltaTime;
+            f.life -= deltaTime;
             if (f.life <= 0) scoreFloater.splice(i, 1);
         }
-        
-        // 9. CLEANUP: Dust Clouds (if any exist)
-        // INCLUDES FIX: Removes dust clouds so they don't drag down performance
+
         if (clashCloudParticles.length > 0) {
-             for (let i = clashCloudParticles.length - 1; i >= 0; i--) {
-                clashCloudParticles[i].life--;
-                if (clashCloudParticles[i].life <= 0) clashCloudParticles.splice(i, 1);
+            for (let i = clashCloudParticles.length - 1; i >= 0; i--) {
+                clashCloudParticles[i].alpha -= 0.015 * deltaTime;
+                if (clashCloudParticles[i].alpha <= 0) clashCloudParticles.splice(i, 1);
             }
         }
 
-        // 10. Background Parallax
-        // INCLUDES FIX: Speeds up background during Secret Mode
-        bgElements.forEach(el => {
-            el.x -= el.speed * (secretMode.active ? 2 : 1);
-            if (el.x < -50) el.x = canvas.width + 50;
-        });
-// GOOSE LOGIC: This makes it actually follow you
         if (!isClashing && !secretMode.active) {
-             // 1. Horizontal: Move from -150 (offscreen) to target (onscreen)
-             goose.x += (goose.targetX - goose.x) * 0.05; 
-             
-             // 2. Vertical: Smoothly follow the player's height
-             goose.y += (player.y - goose.y) * 0.08; 
+            goose.x += (goose.targetX - goose.x) * 0.05;
+            goose.y += (player.y - goose.y) * 0.08;
         }
-        
     }
 
-function draw() {
-        // --- SECTION 1: CLEAR & BACKGROUNDS ---
+    function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw the correct paper or blueprint background
+
         if (secretMode.active) drawBlueprintBackground(); else drawPaperBackground();
-        
-        // Draw space doodles (planets, stars)
         bgElements.forEach(el => drawSpaceDoodle(el));
-        
-        // Draw clouds (transparency changes if in secret mode)
         drawClouds(frames, secretMode.active);
-        
-        
-        // --- SECTION 2: OBSTACLES ---
-        const colors = ["#ffcc80", "#a5d6a7", "#90caf9"]; 
-        const strokes = ["#e65100", "#1b5e20", "#0d47a1"]; 
+
+        const colors = ["#ffcc80", "#a5d6a7", "#90caf9"];
+        const strokes = ["#e65100", "#1b5e20", "#0d47a1"];
 
         obstacles.forEach(obs => {
             if (secretMode.active) {
-                // Blueprint style obstacles
                 ctx.save(); ctx.globalAlpha = 0.3;
                 drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, "#4fc3f7", "#fff");
                 drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, "#4fc3f7", "#fff");
                 ctx.restore();
             } else {
-                // Normal colored obstacles
                 drawDoodleRect(obs.x, 0, obs.width, obs.topHeight, colors[obs.colorIndex], strokes[obs.colorIndex]);
                 drawDoodleRect(obs.x, obs.bottomY, obs.width, canvas.height - obs.bottomY, colors[obs.colorIndex], strokes[obs.colorIndex]);
             }
         });
 
-
-        // --- SECTION 3: COLLECTIBLES ---
-        // Battery
         if (battery.active) drawBattery(battery.x, battery.y + battery.wobble, frames);
-        
-        // Coins
         coins.forEach(c => drawCoin(c, frames));
 
-
-        // --- SECTION 4: BEHIND EFFECTS ---
-        // Draw the dust cloud BEHIND the player if crashing
         if (isClashing) drawClashClouds(0, clashCloudParticles);
 
-
-        // --- SECTION 5: PLAYER RENDERING (CRITICAL FIX IS HERE) ---
         if (secretMode.active) {
-             ctx.save();
-             const jitterX = (Math.random()-0.5)*15; 
-             const jitterY = (Math.random()-0.5)*15;
-             let drawH = canvas.height * 0.85; 
-             let drawW = 300; 
-             
-             // --- THE FIX: SAFETY CHECK ---
-             if (secretPlayerImg.complete && secretPlayerImg.naturalHeight > 0) {
-                 drawW = drawH * (secretPlayerImg.naturalWidth / secretPlayerImg.naturalHeight);
-                 
-                 ctx.shadowBlur = 40 + Math.random() * 40; 
-                 ctx.shadowColor = "#00ffff"; 
-                 ctx.drawImage(secretPlayerImg, -drawW*0.1+jitterX, (canvas.height-drawH)/2+jitterY, drawW, drawH);
-             } else { 
-                 // Fallback so it never freezes
-                 ctx.fillStyle = "rgba(41, 182, 246, 0.5)"; 
-                 ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height); 
-             }
-             
-             // Draw lightning
-             if (frames % 8 < 4) { 
-                 drawLightning(canvas.width*0.1, canvas.height*0.5); 
-                 drawLightning(canvas.width*0.2, canvas.height*0.2); 
-             }
-             ctx.restore();
-             
-             // Draw the Goose
-             drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
-             
+            ctx.save();
+            const jitterX = (Math.random()-0.5)*15;
+            const jitterY = (Math.random()-0.5)*15;
+            let drawH = canvas.height * 0.85;
+            let drawW = 300;
+
+            if (secretPlayerImg.complete && secretPlayerImg.naturalHeight > 0) {
+                drawW = drawH * (secretPlayerImg.naturalWidth / secretPlayerImg.naturalHeight);
+                ctx.shadowBlur = 40 + Math.random() * 40;
+                ctx.shadowColor = "#00ffff";
+                ctx.drawImage(secretPlayerImg, -drawW*0.1+jitterX, (canvas.height-drawH)/2+jitterY, drawW, drawH);
+            } else {
+                ctx.fillStyle = "rgba(41, 182, 246, 0.5)";
+                ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
+            }
+
+            if (frames % 8 < 4) {
+                drawLightning(canvas.width*0.1, canvas.height*0.5);
+                drawLightning(canvas.width*0.2, canvas.height*0.2);
+            }
+            ctx.restore();
+
+            drawGoose(player.x, player.y, player.rotation, frames, isClashing, secretMode.active);
         } else {
-             // Normal Mode
-             drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
-             
-             ctx.save(); 
-             ctx.translate(player.x+player.width/2, player.y+player.height/2); 
-             ctx.rotate(player.rotation);
-             
-             // Draw Player Sprite (Rev)
-             if (playerImg.complete && playerImg.naturalWidth > 0) {
-                 const aspect = playerImg.naturalWidth / playerImg.naturalHeight || 1; 
-                 const drawW = player.width * 1.5; 
-                 const drawH = drawW / aspect;
-                 ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
-             } else { 
-                 // Fallback Box
-                 ctx.fillStyle = "#29b6f6"; ctx.fillRect(-20, -20, 40, 40); 
-                 ctx.strokeStyle="black"; ctx.strokeRect(-20,-20,40,40); 
-             }
-             ctx.restore();
+            drawGoose(goose.x, goose.y, 0, frames, isClashing, false);
+
+            ctx.save();
+            ctx.translate(player.x+player.width/2, player.y+player.height/2);
+            ctx.rotate(player.rotation);
+
+            if (playerImg.complete && playerImg.naturalWidth > 0) {
+                const aspect = playerImg.naturalWidth / playerImg.naturalHeight || 1;
+                const drawW = player.width * 1.5;
+                const drawH = drawW / aspect;
+                ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
+            } else {
+                ctx.fillStyle = "#29b6f6";
+                ctx.fillRect(-20, -20, 40, 40);
+                ctx.strokeStyle="black";
+                ctx.strokeRect(-20,-20,40,40);
+            }
+            ctx.restore();
         }
 
-
-       // --- SECTION 6: FRONT EFFECTS ---
-        // Draw the dust cloud IN FRONT of the player
         if (isClashing) drawClashClouds(1, clashCloudParticles);
-        
-        // Draw Sparks/Particles (CRASH FIX)
-        particles.forEach(p => { 
-            ctx.fillStyle = p.color; 
-            ctx.beginPath(); 
-            // FIX: Ensure radius is never negative using Math.max(0, ...)
-            // This prevents the "IndexSizeError" that was killing Secret Mode
+
+        particles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
             let radius = Math.max(0, p.life / 5);
-            ctx.arc(p.x, p.y, radius, 0, Math.PI*2); 
-            ctx.fill(); 
+            ctx.arc(p.x, p.y, radius, 0, Math.PI*2);
+            ctx.fill();
         });
 
-
-        // --- SECTION 7: UI OVERLAYS ---
-        // Floating +5 or +100 text
         scoreFloater.forEach(f => drawFloater(f));
-        
-        // "SUPERCHARGE" Text
-        if (secretMode.active) { 
-            ctx.font = "bold 40px 'Comic Sans MS'"; 
-            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`; 
-            ctx.textAlign = "center"; 
-            ctx.fillText("SUPERCHARGE!", canvas.width/2, 100); 
+
+        if (secretMode.active) {
+            ctx.font = "bold 40px 'Comic Sans MS'";
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(Math.sin(frames*0.1))})`;
+            ctx.textAlign = "center";
+            ctx.fillText("SUPERCHARGE!", canvas.width/2, 100);
         }
     }
-    
-   function loop() {
-        // 1. Only run logic if NOT paused
+
+    function loop() {
         if (!isPaused) {
-            
-            // 2. Safety Wrap: Prevents the game from freezing if an error occurs
             try {
-                if (isPlaying || isClashing) { 
-                    update(); 
-                    draw(); 
-                }
-                else if (isGameOver) {
+                if (isPlaying || isClashing) {
+                    update();
+                    draw();
+                } else if (isGameOver) {
                     draw();
                 }
             } catch (error) {
-                // 3. Emergency Recovery
-                // If the game crashes (e.g. Secret Mode math error), log it and recover.
                 console.error("Game Loop Error:", error);
-                
                 if (secretMode.active) {
-                    console.warn("Disabling Secret Mode to save the game.");
                     secretMode.active = false;
                     document.getElementById('game-stage').classList.remove('blueprint-mode');
-                    CONFIG.gameSpeed = 3.5; 
                 }
             }
         }
-        
-        // 4. The Heartbeat: This MUST happen every frame, or the game stops forever.
+
         requestAnimationFrame(loop);
     }
 
+    // ==========================================
     // --- EVENTS ---
+    // ==========================================
+
+    document.getElementById('change-user-btn').addEventListener('click', window.changeUser);
+
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
     window.addEventListener('resize', resize);
-    window.addEventListener('keydown', (e) => { 
+    window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' || e.code === 'ArrowUp') { if(isPaused) togglePause(); else jump(); }
         if (e.code === 'Tab') { e.preventDefault(); togglePause(); }
     });
     canvas.addEventListener('mousedown', jump);
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, { passive: false });
-    
+
     function togglePause() {
         if (!isPlaying || isGameOver || isClashing) return;
         isPaused = !isPaused;
@@ -1409,149 +1303,59 @@ function draw() {
         isPaused ? overlay.classList.add('active') : overlay.classList.remove('active');
         if(!isPaused && AudioSys.ctx && AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
     }
+
     document.getElementById('pause-overlay').addEventListener('click', togglePause);
 
-    // --- ON LOAD (FIX: Immediate Audio Load) ---
-    window.onload = function() {
+    // --- ON LOAD ---
+    window.addEventListener('load', function() {
         resize();
-        document.getElementById('loading').style.display = 'none';
         updateUserDisplay();
-        
-        if (typeof AudioSys !== 'undefined') AudioSys.init();
-        
+
+        const startBtn = document.getElementById('start-btn');
+        const loadingIndicator = document.getElementById('loading');
+        startBtn.disabled = true;
+        loadingIndicator.innerText = "Loading Sounds...";
+
+        AudioSys.init().then(() => {
+            loadingIndicator.style.display = 'none';
+            startBtn.disabled = false;
+            startBtn.innerText = "Start Flying";
+
+            window.addEventListener('click', function ms() {
+                if(AudioSys.ctx && AudioSys.ctx.state==='suspended') AudioSys.ctx.resume();
+                if(!AudioSys.isPlaying) AudioSys.playTrack('start_screen');
+            }, { once: true });
+        });
+
         const vs = document.getElementById('volume-slider');
-        if(vs) vs.addEventListener('input', (e) => { e.stopPropagation(); AudioSys.setVolume(e.target.value); if(AudioSys.ctx.state==='suspended')AudioSys.ctx.resume(); });
-        
-        window.addEventListener('click', function ms() {
-            if(AudioSys.ctx && AudioSys.ctx.state==='suspended') AudioSys.ctx.resume();
-            if(!AudioSys.isPlaying) AudioSys.playTrack('start_screen');
-            window.removeEventListener('click', ms);
-        }, {once:true});
-    };
+        if(vs) vs.addEventListener('input', (e) => { e.stopPropagation(); AudioSys.setVolume(e.target.value); if(AudioSys.ctx && AudioSys.ctx.state==='suspended')AudioSys.ctx.resume(); });
+    });
 
+    // Mobile landscape fullscreen helper (added)
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    function autoFullscreenOnLandscape() {
+        if (!isMobileDevice()) return;
+        if (window.orientation === 90 || window.orientation === -90) {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(()=>{});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            }
+        }
+    }
+    window.addEventListener('orientationchange', autoFullscreenOnLandscape);
+
+    // Mute control wiring
+    document.getElementById('mute-btn').addEventListener('click', () => { AudioSys.toggleMute(); });
+
+    // initial resize
+    resize();
 </script>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
